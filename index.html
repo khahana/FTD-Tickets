@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<title>F-Trucks Deutschland — AfterSales Ticket System</title>
+<meta name="theme-color" content="#003478">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FTD Tickets">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="FTD AfterSales">
+<meta name="description" content="F-Trucks Deutschland AfterSales Ticket System">
+<script>
+function generateIcon(size){const c=document.createElement('canvas');c.width=size;c.height=size;const x=c.getContext('2d');x.fillStyle='#003478';x.fillRect(0,0,size,size);x.fillStyle='#F26522';x.fillRect(0,size*0.78,size,size*0.22);x.fillStyle='#FFFFFF';x.font='bold '+Math.round(size*0.22)+'px Arial';x.textAlign='center';x.fillText('FTD',size/2,size*0.38);x.font=Math.round(size*0.11)+'px Arial';x.fillText('AfterSales',size/2,size*0.55);x.fillText('Tickets',size/2,size*0.70);return c.toDataURL('image/png')}
+window.addEventListener('DOMContentLoaded',()=>{
+  const manifest={name:'F-Trucks Deutschland AfterSales Ticket System',short_name:'FTD Tickets',start_url:location.href,display:'standalone',orientation:'any',background_color:'#003478',theme_color:'#003478',icons:[]};
+  [72,96,128,144,152,192,384,512].forEach(s=>{manifest.icons.push({src:generateIcon(s),sizes:s+'x'+s,type:'image/png',purpose:'any maskable'})});
+  const mLink=document.createElement('link');mLink.rel='manifest';mLink.href=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/json'}));document.head.appendChild(mLink);
+  const ai=document.createElement('link');ai.rel='apple-touch-icon';ai.href=generateIcon(180);document.head.appendChild(ai);
+});
+if('serviceWorker' in navigator){const sw=`const C='ftd-v1';self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll([self.location.href])).then(()=>self.skipWaiting()))});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{if(resp.status===200){const c=resp.clone();caches.open(C).then(cache=>cache.put(e.request,c))}return resp}).catch(()=>caches.match(self.location.href)))})});`;navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'})),{scope:location.pathname}).catch(()=>{})}
+let deferredPrompt;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const b=document.getElementById('installBtn');if(b)b.style.display='inline-flex';const li=document.getElementById('loginInstall');if(li)li.style.display='block'});
+function installPWA(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;const b=document.getElementById('installBtn');if(b)b.style.display='none'})}}
+</script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root,[data-theme="light"]{--ford-blue:#003478;--ford-orange:#F26522;--bg:#F0F2F5;--bg-card:#fff;--bg-input:#fff;--border:#E2E8F0;--text:#1A1A2E;--text-sec:#64748B;--text-mut:#94A3B8;--success:#10B981;--success-bg:#ECFDF5;--warning:#F59E0B;--warning-bg:#FEF3C7;--danger:#EF4444;--danger-bg:#FEF2F2;--info:#3B82F6;--info-bg:#EFF6FF;--radius:10px;--radius-sm:6px;--font:'Segoe UI',system-ui,-apple-system,sans-serif;--mono:'Consolas',monospace}
+[data-theme="dark"]{--ford-blue:#4A90D9;--ford-orange:#F26522;--bg:#0F172A;--bg-card:#1E293B;--bg-input:#334155;--border:#334155;--text:#E2E8F0;--text-sec:#94A3B8;--text-mut:#64748B;--success:#34D399;--success-bg:#064E3B;--warning:#FBBF24;--warning-bg:#78350F;--danger:#F87171;--danger-bg:#7F1D1D;--info:#60A5FA;--info-bg:#1E3A5F}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+.topbar{background:#003478;color:#fff;padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.topbar-avatar{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;cursor:pointer}
+.icon-btn{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;position:relative}
+.icon-btn:hover{background:rgba(255,255,255,0.1)}
+.notif-badge{position:absolute;top:2px;right:2px;background:var(--danger);color:#fff;font-size:9px;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.notif-panel{position:fixed;top:52px;right:10px;width:320px;max-height:400px;overflow-y:auto;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 8px 30px rgba(0,0,0,0.15);z-index:200;display:none}
+.notif-panel.active{display:block}
+.notif-panel-hdr{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px}
+.notif-item{padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer}
+.notif-item.unread{background:var(--info-bg)}
+.notif-item:hover{background:var(--bg)}
+.notif-time{font-size:10px;color:var(--text-mut);margin-top:3px}
+.tab-nav{display:flex;gap:4px;padding:8px 16px;background:var(--bg-card);border-bottom:1px solid var(--border);overflow-x:auto;flex-wrap:nowrap}
+.tab-btn{padding:6px 14px;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;background:transparent;color:var(--text-sec);font-family:var(--font)}
+.tab-btn.active{background:var(--ford-blue);color:#fff}
+.tab-btn:hover:not(.active){background:var(--bg)}
+.badge{background:rgba(0,0,0,0.1);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px}
+.tab-btn.active .badge{background:rgba(255,255,255,0.2)}
+.main{padding:16px;max-width:1200px;margin:0 auto;padding-bottom:80px}
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-card{background:var(--bg-card);border-radius:var(--radius);padding:40px 36px;width:100%;max-width:500px;box-shadow:0 4px 20px rgba(0,0,0,0.1)}
+.login-logo{text-align:center;margin-bottom:20px}
+.login-logo img{height:180px;margin-bottom:20px}
+.login-logo h2{font-size:18px;color:var(--ford-blue)}
+.login-logo p{font-size:12px;color:var(--text-sec)}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-sec)}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);background:var(--bg-input);color:var(--text)}
+.form-group textarea{resize:vertical}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{padding:8px 16px;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all 0.15s}
+.btn-primary{background:var(--ford-blue);color:#fff}
+.btn-ford{background:var(--ford-orange);color:#fff}
+.btn-secondary{background:var(--bg);border:1px solid var(--border);color:var(--text)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-success{background:var(--success);color:#fff}
+.btn-sm{padding:5px 10px;font-size:11px}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center}
+.stat-label{font-size:10px;color:var(--text-mut);text-transform:uppercase;font-weight:600;letter-spacing:0.5px}
+.stat-value{font-size:24px;font-weight:700;margin-top:2px}
+.alert-banner{padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:12px;font-size:12px;font-weight:600;border:1px solid var(--danger);background:var(--danger-bg);color:var(--danger)}
+.ticket-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ticket-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;transition:all 0.15s;border-left:4px solid transparent}
+.ticket-card:hover{box-shadow:0 2px 12px rgba(0,0,0,0.08);transform:translateY(-1px)}
+.ticket-card.p-critical{border-left-color:var(--danger)}.ticket-card.p-high{border-left-color:var(--warning)}.ticket-card.p-medium{border-left-color:var(--info)}.ticket-card.p-low{border-left-color:var(--success)}
+.ticket-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.ticket-id{font-size:11px;font-weight:600;color:var(--text-mut);font-family:var(--mono)}
+.ticket-date{font-size:11px;color:var(--text-mut)}
+.ticket-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.ticket-desc{font-size:12px;color:var(--text-sec);margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ticket-meta{display:flex;flex-wrap:wrap;gap:4px}
+.tag{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;display:inline-block}
+.tag-open{background:var(--info-bg);color:var(--info)}.tag-progress{background:var(--warning-bg);color:var(--warning)}.tag-resolved{background:var(--success-bg);color:var(--success)}.tag-closed{background:var(--bg);color:var(--text-mut)}
+.tag-critical{background:var(--danger-bg);color:var(--danger)}.tag-high{background:var(--warning-bg);color:var(--warning)}.tag-medium{background:var(--info-bg);color:var(--info)}.tag-low{background:var(--success-bg);color:var(--success)}
+.tag-cat{background:#FFF3E0;color:#E65100}.tag-mob{background:var(--success-bg);color:var(--success)}.tag-immob{background:var(--danger-bg);color:var(--danger)}.tag-media{background:var(--bg);color:var(--text-sec)}
+.filter-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.filter-select{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:var(--bg-input);color:var(--text);font-family:var(--font)}
+.filter-search{flex:1;min-width:150px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:var(--bg-input);color:var(--text);font-family:var(--font)}
+.detail-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:300;display:none}
+.detail-overlay.active{display:block}
+.detail-panel{position:fixed;top:0;right:-500px;width:480px;max-width:90vw;height:100vh;background:var(--bg-card);z-index:301;transition:right 0.3s;display:flex;flex-direction:column;box-shadow:-4px 0 20px rgba(0,0,0,0.15)}
+.detail-panel.active{right:0}
+.detail-hdr{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.detail-hdr h3{font-size:16px}
+.detail-body{flex:1;overflow-y:auto;padding:16px}
+.detail-section{margin-bottom:16px}
+.detail-section-title{font-size:12px;font-weight:700;color:var(--ford-orange);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.detail-field label{font-size:10px;color:var(--text-mut);display:block;margin-bottom:2px}
+.detail-field span{font-size:13px;font-weight:500}
+.detail-desc{font-size:13px;line-height:1.6;color:var(--text-sec);background:var(--bg);padding:10px;border-radius:var(--radius-sm)}
+.detail-footer{padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.activity-list{max-height:300px;overflow-y:auto}
+.activity-item{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.activity-avatar{width:28px;height:28px;border-radius:50%;background:var(--ford-blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.activity-content{flex:1;font-size:12px}
+.activity-author{font-weight:600;margin-right:6px}
+.activity-time{font-size:10px;color:var(--text-mut)}
+.activity-text{margin-top:3px;color:var(--text-sec)}
+.activity-change{margin-top:3px;color:var(--ford-blue);font-style:italic}
+.comment-input{display:flex;gap:6px;margin-top:10px}
+.comment-input input{flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:var(--bg-input);color:var(--text);font-family:var(--font)}
+.close-btn{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-sec);padding:4px}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:400;display:none;align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:var(--bg-card);border-radius:var(--radius);width:90%;max-width:500px;max-height:85vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,0.2)}
+.modal-hdr{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-hdr h3{font-size:15px}
+.modal-body{padding:16px}
+.modal-footer{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.file-drop{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center;cursor:pointer;font-size:12px;color:var(--text-mut)}
+.file-drop.dragover{border-color:var(--ford-orange);background:var(--bg)}
+.file-previews{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.file-preview{width:60px;height:60px;border-radius:var(--radius-sm);overflow:hidden;position:relative;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--text-sec);cursor:pointer;background:var(--bg)}
+.file-preview img{width:100%;height:100%;object-fit:cover}
+.file-preview .rm{position:absolute;top:2px;right:2px;width:16px;height:16px;background:var(--danger);color:#fff;border:none;border-radius:50%;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.settings-table{width:100%;border-collapse:collapse;font-size:12px}
+.settings-table th{text-align:left;padding:8px 10px;font-size:10px;text-transform:uppercase;color:var(--ford-blue);border-bottom:2px solid var(--border)}
+.settings-table td{padding:7px 10px;border-bottom:1px solid var(--border)}
+.empty-state{text-align:center;padding:40px;color:var(--text-mut)}
+.lightbox{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:500;display:none;align-items:center;justify-content:center;cursor:pointer}
+.lightbox.active{display:flex}
+.lightbox img{max-width:90%;max-height:90%;border-radius:8px}
+
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg-card);border-top:1px solid var(--border);z-index:90;padding:4px 0;padding-bottom:env(safe-area-inset-bottom)}
+.mobile-nav-inner{display:flex;justify-content:space-around}
+.mnav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;background:none;border:none;font-size:9px;color:var(--text-mut);cursor:pointer;font-family:var(--font)}
+.mnav-btn svg{width:20px;height:20px}
+.mnav-btn.active{color:var(--ford-blue)}
+.hint{font-size:10px;color:var(--text-mut);margin-top:2px}
+@media(max-width:768px){.tab-nav{display:none}.mobile-nav{display:block}.detail-panel{width:100%;max-width:100%}.form-row{grid-template-columns:1fr}.ticket-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const LOGO="data:image/png;base64,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z3NVrdfr55577otf8hIAeZZ99KMffeihhyYnJ1ut1sqVKzdv3nzTTTfV6/VFe1gOOMOQiPr9fnnGHtyx46GHHjpw4EBRFEmSDA8Pn3322VddddXadeuOHz9+5513Hj58+OjRo51OJ47jFStWnHPOOTfccIO11nv/xS9+8ctf/nK32y3vIKOjo91u1xiTZVkYhqUzQkSuKEww8JfWNxQDfzbZmCxNiajRaKRpevfdd/f7/TVr1tRqtRUrV65bt64cU9Xr9XLa7PHHH2+1WvV6fWZmZmpqqtFoXHvtta1W6+GHH96/f//o6OiqVavSNJ2cnEzTdOPGjeecc06n0zl8+HCv1yOi+fn5yy+/3BgzOTn52GOPPf/5zx8aHj527NjU1FS/35+fny8Nb5Ikd99999atWzdu3HjnnXc++OCDExMTK1euVNVDhw4x8/r16zdt2oQlZ7goitIz996XVr3dbgOI4zgMw9nZWQDGmHa73Ww2H3zwwauuuoqZP/GJT9x1113W2jPPPLPb7U5NTR08eLDVat14443ljFHpShRFwczGGGLu93p33HHH3r17Q2tXr15dZNnRw4ePT02Jcy972csatdpDO3ZMTU2NjIysWrHCe3/08OGk1zv7rLO2bN26d+/ez33uc0888cTKlSvjOO71erOzs8PDw8PDw0SUZVlcq5VTWTYIKtf35DLwQhXvozjetGnT+vXrDxw4sGPHjkceeaRerwdBMD4+vmHDhuc+97m1Wq00R0VRbNmy5cYbb2TmT3/605OTk8eOHTt8+PC69eu/5Vu+Ze/evdu3bx8bG9uzZ8/HP/7xI0eOzMzMlBO2Y2NjRVGsWrXqhhtuOP/887vdbq1Wa7VaxhjvXBiG5WDv9a9//apVq+6555777rtvenraOTc/P//ggw+GYXjNNdc893nPA3Drv/7r7bffPjs72+/3h6wl5m6nc911161du/bWW289cODAc57znGc84xkjIyNpmuZ5XhTFyMjI85///KGhod27d991112zs7MzMzNr167dsWNHHMdXXXXVy17+cgCfuv32f/zHf9y1a9fznvc8Arz3bAwzF0VRr9fDMCzyfNeuXXv37h0fH7/4wgsvv/zyfr//8MMPf+5zn3v44YevueaatevXv+Y1rzly5MjWrVubzeajjz562223HT58eHp6esOmTffcc8/U1NR5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";
+const DEALERS=[{"name":"Artur Blötz GmbH & Co. KG","type":"Workshop","city":"Braunschweig","state":"Niedersachsen","claim":"Martin","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Auto Bäcker GmbH","type":"Workshop","city":"Neukirchen","state":"Saarland","claim":"Burak","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Autohaus Anders GmbH","type":"Workshop & Sales","city":"Vechta","state":"Niedersachsen","claim":"Burak","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Autohaus Andreas Fiegler GmbH & Co. KG","type":"Workshop","city":"Stolzenau","state":"Niedersachsen","claim":"Burak","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Autohaus MB Zittel KG","type":"Workshop & Sales","city":"Alsdorf","state":"Nordrhein-Westfalen","claim":"Burak","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Autohaus Schurr GmbH","type":"Workshop","city":"Langenau","state":"Baden-Württemberg","claim":"Hansjörg","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Autohaus Sieg GmbH","type":"Workshop & Sales","city":"Porta Westfalica","state":"Nordrhein-Westfalen","claim":"Burak","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Autohaus Werner GmbH","type":"Workshop & Sales","city":"Weyhe","state":"Niedersachsen","claim":"Burak","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Auto-Obermann GmbH","type":"Workshop & Sales","city":"Mühlheim an der Ruhr","state":"Nordrhein-Westfalen","claim":"Martin","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Autoservice Rehren GmbH","type":"Workshop","city":"Auetal","state":"Niedersachsen","claim":"Burak","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Bayern Trucks Sales GmbH","type":"Workshop","city":"Woerth an der Donau","state":"Bayern","claim":"Burak","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Beck Fahrzeugservice GmbH","type":"Workshop","city":"Heilbronn","state":"Baden-Württemberg","claim":"Michael","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Beständig GmbH","type":"Workshop & Sales","city":"Knetzgau","state":"Bayern","claim":"Michael","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Breddermann + Baum GmbH","type":"Workshop","city":"Gevelsberg","state":"Nordrhein-Westfalen","claim":"Burak","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Breitsameter KFZ GmbH & Co. KG","type":"Workshop","city":"Kühbach","state":"Bayern","claim":"Hansjörg","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Brummi-Center Wasserburg GmbH","type":"Workshop","city":"Wasserburg","state":"Bayern","claim":"Hansjörg","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Burkard Zimmermann e.K. Truck&Trailer Service","type":"Workshop","city":"Köln","state":"Nordrhein-Westfalen","claim":"Burak","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"CW Kälte- und Transporttechnik GmbH & Co. KG","type":"Workshop","city":"Garrel","state":"Niedersachsen","claim":"Burak","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Dietrich GmbH","type":"Workshop & Sales","city":"Wenden-Gerlingen","state":"Nordrhein-Westfalen","claim":"Burak","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Eicher GmbH","type":"Workshop & Sales","city":"Hartmannsdorf","state":"Sachsen","claim":"Martin","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Fahrzeugtechnik Grotz","type":"Workshop","city":"Sasbach","state":"Baden-Württemberg","claim":"Hansjörg","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Fahrzeugzentrum Schnelldorf GmbH","type":"Workshop & Sales","city":"Schnelldorf","state":"Bayern","claim":"Michael","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"FISCHER Weilheim GmbH & Co. KG","type":"Workshop","city":"Weilheim an der Teck","state":"Baden-Würrtemberg","claim":"Hansjörg","tech":"","service":"Stefan","parts":"Sandra / Niels"},{"name":"Ford Werke Köln","type":"Workshop","city":"Köln","state":"Nordrhein-Westfalen","claim":"Burak","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Fürmetz Werkstattservice GmbH","type":"Workshop","city":"Taufkirchen","state":"Bayern","claim":"Adrian","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Georg Diekmann Automobile GmbH & Co. KG","type":"Workshop & Sales","city":"Bremerhaven","state":"Bremen","claim":"Burak","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Georg Gerblinger Fahrzeugtechnik GmbH & Co. KG","type":"Workshop","city":"Buttenwiesen","state":"Bayern","claim":"Hansjörg","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"GM Georg Meier GmbH","type":"Workshop","city":"Amberg","state":"Bayern","claim":"Hansjörg","tech":"","service":"Stefan","parts":"Sandra / Niels"},{"name":"GM Georg Meier GmbH","type":"Workshop","city":"Neumarkt","state":"Bayern","claim":"Hansjörg","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Gruber Nutzfahrzeuge GmbH","type":"Workshop","city":"Winhöring","state":"Bayern","claim":"Hansjörg","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"GSS Nutzfahrzeuge GmbH","type":"Workshop","city":"Langenbernsdorf","state":"Sachsen","claim":"Hansjörg","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Heinrich Göbel GmbH","type":"Workshop & Sales","city":"Dreieich","state":"Hessen","claim":"Michael","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Horst Beständig GmbH","type":"Workshop & Sales","city":"Gochsheim","state":"Bayern","claim":"Michael","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"J. A. Schlüter Söhne LKW GmbH & Co. KG","type":"Workshop","city":"Hamburg","state":"Hamburg","claim":"Martin","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Kasseler Nutzfahrzeug Service GmbH & Co. KG","type":"Workshop","city":"Kassel","state":"Hessen","claim":"Martin","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Kaufman GmbH LKW Service","type":"Workshop","city":"Hannover","state":"Niedersachsen","claim":"Martin","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Keck Nutzfahrzeuge GmbH Owingen Engines","type":"Workshop","city":"Owingen","state":"Baden-Württemberg","claim":"Adrian","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Keck Nutzfahrzeuge GmbH Owingen Rest","type":"Workshop","city":"","state":"","claim":"Adrian","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"KLW Fahrzeugtechnik GmbH","type":"Workshop","city":"Trier","state":"Rheinland-Pfalz","claim":"Burak","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Köster Landtechnik und Nutzfahrzeuge GmbH","type":"Workshop","city":"Jürgenstorf/Meckl.","state":"Mecklenburg","claim":"Adrian","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Kreuter Medele Schäfer","type":"Workshop & Sales","city":"Kempten","state":"Bayern","claim":"Adrian","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Kreuter Medele Schäfer","type":"Workshop & Sales","city":"Königsbrunn","state":"Bayern","claim":"Adrian","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"LKW Lasic GmbH","type":"Workshop","city":"München","state":"Bayern","claim":"Hansjörg","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"LKW Service Pötzsch GmbH","type":"Workshop","city":"Dippoldiswalde","state":"Sachsen","claim":"Martin","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"LKW Werkstatt Rendler","type":"Workshop","city":"Stühlingen / Weizen","state":"Baden-Württemberg","claim":"Hansjörg","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"LOG GmbH","type":"Workshop & Sales","city":"Stühlingen","state":"Baden-Württemberg","claim":"Hansjörg","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Markwort KG","type":"Workshop","city":"Soest","state":"Nordrhein-Westfalen","claim":"Burak","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Markwort KG","type":"Workshop","city":"Hamm","state":"Nordrhein-Westfalen","claim":"Burak","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Max Schultz Automobile GmbH & Co. KG","type":"Workshop & Sales","city":"Sonnefeld","state":"Bayern","claim":"Adrian","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Max Schultz Automobile GmbH & Co. KG","type":"Workshop & Sales","city":"Leipzig Radefeld","state":"Sachsen","claim":"Adrian","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Max Schultz Automobile GmbH & Co. KG","type":"Workshop & Sales","city":"Weimar","state":"Thüringen","claim":"Adrian","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"NSG NUTZFAHRZEUGE GLEHN GMBH","type":"Workshop & Sales","city":"Korschenbroich","state":"Nordrhein-Westfalen","claim":"Burak","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"NuFa-Tec GmbH & Co.KG","type":"Workshop","city":"Langenbach","state":"Rheiland Pfalz","claim":"Burak","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Nutzfahrzeuge Bruck GmbH Co. KG","type":"Workshop","city":"Bruck i. d. Oberpfalz","state":"Bayern","claim":"Burak","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"OsnaTruck Nutzfahrzeugservice GmbH","type":"Workshop & Sales","city":"Osnabrück","state":"Niedersachsen","claim":"Burak","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Otto Blötz GmbH & Co. KG","type":"Workshop","city":"Königsborn","state":"Sachsen-Anhalt","claim":"Martin","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"PS Nutzfahrzeuge","type":"Workshop","city":"Varell","state":"Niedersachsen","claim":"Burak","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"SAMM GmbH","type":"Workshop","city":"Schleiz","state":"Thüringen","claim":"Hansjörg","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Schlosser Fahrzeugservice GmbH & Co. KG","type":"Workshop","city":"Mücke","state":"Hessen","claim":"Burak","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Schütte Fahrzeugbau GmbH","type":"Workshop","city":"Wardenburg","state":"Niedersachsen","claim":"Burak","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Stern-Center Regensburg GmbH & Co. KG","type":"Workshop","city":"Regensburg","state":"Bayern","claim":"Adrian","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Süverkrüp + Ahrendt GmbH & Co- KG","type":"Workshop & Sales","city":"Kiel","state":"Schleswig-Holstein","claim":"Martin","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Süverkrüp + Ahrendt GmbH & Co. KG","type":"Workshop & Sales","city":"Neumünster","state":"Schleswig-Holstein","claim":"Martin","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Süverkrüp + Ahrendt Gmbh & Co. KG","type":"Workshop & Sales","city":"Itzehoe","state":"Schleswig-Holstein","claim":"Martin","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Süverkrüp + Ahrendt GmbH & Co. KG","type":"Workshop & Sales","city":"Eutin","state":"Schleswig-Holsteins","claim":"Martin","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Theodor Stockinger","type":"Workshop","city":"Achern","state":"Baden-Württemberg","claim":"Hansjörg","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Thorwesten GmbH","type":"Workshop","city":"Schloss Holte-Stukenbrock","state":"Nordrhein-Westfalen","claim":"Burak","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"TKS Transportkälte & LKW Service GmbH","type":"Workshop","city":"Manching","state":"Bayern","claim":"Hansjörg","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Truck & Trailer Service GmbH","type":"Workshop","city":"Hörselberg-Hainich","state":"Thüringen","claim":"Hansjörg","tech":"Adrian","service":"Stefan","parts":"Sandra / Niels"},{"name":"Truck Center Backes GmbH","type":"Workshop & Sales","city":"Olzheim","state":"Rheinland-Pfalz","claim":"Burak","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Truck Service Bobak GmbH","type":"Workshop","city":"Ginsheim-Gustavsburg","state":"Hessen","claim":"Michael","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"},{"name":"Udo Rummler Nutzfahrzeuge GmbH","type":"Workshop","city":"Lueneburg","state":"Niedersachsen","claim":"Martin","tech":"Martin","service":"Stefan","parts":"Sandra / Niels"},{"name":"Weller GmbH & Betriebs-KG","type":"Workshop","city":"Lorch","state":"Baden-Württemberg","claim":"Michael","tech":"Michael","service":"Stefan","parts":"Sandra / Niels"}];
+const FTD_TEAM=[
+  {id:'ml',name:'Michael Loew',email:'michael.loew@ford-trucks.de',role:'Aftersales Manager',isAdmin:true},
+  {id:'martin',name:'Martin Assmuth',email:'martin.assmuth@ford-trucks.de',role:'Claim/Warranty & Technical',isAdmin:false},
+  {id:'burak',name:'Burak Balli',email:'burak.balli@ford-trucks.de',role:'Claim/Warranty',isAdmin:false},
+  {id:'hansjoerg',name:'Hansj\u00F6rg D\u00FCrrschnabel',email:'hansjoerg.duerrschnabel@ford-trucks.de',role:'Claim/Warranty',isAdmin:false},
+  {id:'adrian',name:'Adrian Jeske',email:'adrian.jeske@ford-trucks.de',role:'Technical Support',isAdmin:false},
+  {id:'stefan',name:'Stefan Wiegand',email:'stefan.wiegand@ford-trucks.de',role:'Service / Immobilized',isAdmin:false},
+  {id:'sandra',name:'Sandra Hammer',email:'sandra.hammer@ford-trucks.de',role:'Parts & Distribution',isAdmin:false},
+  {id:'niels',name:'Niels Knipp',email:'niels.knipp@ford-trucks.de',role:'Parts & Distribution',isAdmin:false},
+  {id:'stephan_w',name:'Stephan Wakan',email:'stephan.wakan@ford-trucks.de',role:'Technical Support',isAdmin:false}
+];
+const HEAD_OF_AS='ml';
+const CATEGORIES=['Technisches Ticket','Ersatzteil Ticket','Sonstiges Ticket'];
+const DEFAULT_SUBCATEGORIES={
+  'Technisches Ticket':['Fahrzeug Au\u00DFen','Fahrzeug Innen','Chassis','Fahrwerk','Lackierung','Antriebsstrang','Elektronik','Sonstiges'],
+  'Ersatzteil Ticket':['Ersatzteil Ermittlung','Ersatzteil Reklamation','Ersatzteil R\u00FCcksendung','Ersatzteil Ersetzung','Sonstiges'],
+  'Sonstiges Ticket':['Benutzer Anlegen','Benutzer L\u00F6schen','Benutzer Zugangsprobleme / Passwort','Sonstige']
+};
+let subcategories=JSON.parse(JSON.stringify(DEFAULT_SUBCATEGORIES));
+const PRIORITIES=['Critical','High','Medium','Low'];
+const STATUSES=['Open','In Progress','Resolved','Closed'];
+const STATUS_LABELS={'Open':'Offen / Open','In Progress':'In Bearbeitung / In Progress','Resolved':'Erledigt / Resolved','Closed':'Geschlossen / Closed'};
+const STATUS_HINTS={'Open':'Neu erstellt, wartet auf Bearbeitung','In Progress':'Wird aktiv bearbeitet','Resolved':'L\u00F6sung umgesetzt \u2014 wartet auf Best\u00E4tigung vom Dealer','Closed':'Abgeschlossen und archiviert'};
+const STATUS_FLOW='\u25CB Open \u2192 \u25D4 In Progress \u2192 \u2705 Resolved (awaiting confirmation) \u2192 \uD83D\uDD12 Closed (archived)';
+const PRIORITY_LABELS={'Critical':'Kritisch / Critical','High':'Hoch / High','Medium':'Mittel / Medium','Low':'Niedrig / Low'};
+const CLOSE_REASONS=['Gel\u00F6st / Resolved','Ersatzteil geliefert / Part delivered','Garantie abgewickelt / Warranty processed','Schulung durchgef\u00FChrt / Training completed','Duplikat / Duplicate','Nicht reproduzierbar / Cannot reproduce','Vom Kunden zur\u00FCckgezogen / Withdrawn by customer','Sonstiges / Other'];
+
+let currentUser=null,tickets=[],nextTid=1,notifications=[],holidays=[],userRights=[],currentTab='dashboard',uploadedFiles=[],notifOpen=false,settingsTab='subcats',langMode='de_en',analyticsDealer='';
+
+function L(de,en){return langMode==='de'?de:de+' / '+en}
+
+function loadState(){
+  try{const s=localStorage.getItem('ftdV17');if(s){const d=JSON.parse(s);tickets=d.t||[];nextTid=d.n||1;notifications=d.nf||[];holidays=d.h||[];userRights=d.ur||[];langMode=d.lang||'de_en';
+    subcategories=JSON.parse(JSON.stringify(DEFAULT_SUBCATEGORIES));
+  }}catch(e){}
+  FTD_TEAM.forEach(m=>{if(!userRights.find(u=>u.userId===m.id&&u.type==='ftd'))userRights.push({userId:m.id,type:'ftd',name:m.name,role:m.role,email:m.email,canAdmin:m.isAdmin})});
+  if(!tickets.length)seedDemo();
+  saveState();
+}
+function saveState(){try{localStorage.setItem('ftdV17',JSON.stringify({t:tickets,n:nextTid,nf:notifications,h:holidays,sc:subcategories,ur:userRights,lang:langMode}))}catch(e){}}
+
+function seedDemo(){
+  const D=[
+    {t:'F-MAX 500 Motorsteuerger\u00E4t Fehler E-4071',d:'Wiederkehrender Fehlercode E-4071 beim Kaltstart. Motor geht in Notlauf.',cat:'Technisches Ticket',sub:'Elektronik',pri:'Critical',st:'Open',di:0,mob:false,vin:'WF0XXXGCDX1234567',rsa:'3318924',eh:'14200',ml:'186000',cr:'2026-03-04T08:00:00',up:'2026-03-16T09:30:00'},
+    {t:'Ersatzteil Ermittlung: Ladeluftkühler F-MAX',d:'Ladeluftkühler für F-MAX 500 beschädigt. Teilenummer wird benötigt.',cat:'Ersatzteil Ticket',sub:'Ersatzteil Ermittlung',pri:'High',st:'In Progress',di:0,mob:true,vin:'WF0XXXGCDX1234567',rsa:'',eh:'14200',ml:'186000',cr:'2026-03-04T14:00:00',up:'2026-03-15T14:00:00'},
+    {t:'Benutzer Anlegen: Neuer Werkstattleiter',d:'Neuer Werkstattleiter benötigt Zugang zum Partnerportal und Warranty System.',cat:'Sonstiges Ticket',sub:'Benutzer Anlegen',pri:'Medium',st:'Open',di:0,mob:true,vin:'',rsa:'',eh:'',ml:'',cr:'2026-03-05T09:00:00',up:'2026-03-17T23:00:00'},
+    {t:'Lackschaden an Fahrerhaus F-MAX',d:'Transportschaden am Fahrerhaus. Lackierung muss erneuert werden.',cat:'Technisches Ticket',sub:'Lackierung',pri:'Low',st:'Resolved',di:0,mob:true,vin:'WF0XXXGCDX1111111',rsa:'',eh:'320',ml:'4200',cr:'2026-03-05T15:00:00',up:'2026-03-12T16:00:00'},
+    {t:'Ersatzteil Reklamation: Falscher Kupplungssatz',d:'Gelieferter Kupplungssatz passt nicht. Falsches Teileprofil für F-MAX 500.',cat:'Ersatzteil Ticket',sub:'Ersatzteil Reklamation',pri:'High',st:'Open',di:1,mob:false,vin:'WF0XXXGCDX2222222',rsa:'',eh:'8500',ml:'112000',cr:'2026-03-06T07:30:00',up:'2026-03-16T11:00:00'},
+    {t:'Fahrwerk Geräusche vorne links',d:'Klapperndes Geräusch aus dem Fahrwerk vorne links bei über 60 km/h.',cat:'Technisches Ticket',sub:'Fahrwerk',pri:'Medium',st:'In Progress',di:1,mob:true,vin:'WF0XXXGCDX2222222',rsa:'',eh:'8500',ml:'112000',cr:'2026-03-06T11:00:00',up:'2026-03-17T16:00:00'},
+    {t:'Benutzer Zugangsprobleme / Passwort: Portal Zugang',d:'Benutzer kann sich nicht am Partnerportal anmelden. Passwort-Reset erforderlich.',cat:'Sonstiges Ticket',sub:'Benutzer Zugangsprobleme / Passwort',pri:'Low',st:'Resolved',di:1,mob:true,vin:'',rsa:'',eh:'',ml:'',cr:'2026-03-06T16:00:00',up:'2026-03-10T14:00:00'},
+    {t:'Chassis Riss am Rahmenträger',d:'Rissbildung am linken Rahmenträger. Fahrzeug ist immobilisiert.',cat:'Technisches Ticket',sub:'Chassis',pri:'Critical',st:'Open',di:2,mob:false,vin:'WF0XXXGCDX3333333',rsa:'3319102',eh:'22000',ml:'298000',cr:'2026-03-07T08:00:00',up:'2026-03-17T08:00:00'},
+    {t:'Ersatzteil Rücksendung: Turbolader',d:'Turbolader war defekt bei Lieferung. Rücksendung und Ersatz wird angefordert.',cat:'Ersatzteil Ticket',sub:'Ersatzteil Rücksendung',pri:'High',st:'In Progress',di:2,mob:false,vin:'WF0XXXGCDX3333333',rsa:'',eh:'22000',ml:'298000',cr:'2026-03-07T13:00:00',up:'2026-03-15T21:00:00'},
+    {t:'Fahrzeug Innen: Armaturenbrett Vibration',d:'Starke Vibration am Armaturenbrett bei über 1800 U/min.',cat:'Technisches Ticket',sub:'Fahrzeug Innen',pri:'Medium',st:'Open',di:2,mob:true,vin:'WF0XXXGCDX3334444',rsa:'',eh:'5600',ml:'74000',cr:'2026-03-08T07:00:00',up:'2026-03-18T14:30:00'},
+    {t:'Benutzer Zugangsprobleme: FODIT System',d:'Zwei Mitarbeiter können nicht auf FODIT zugreifen.',cat:'Sonstiges Ticket',sub:'Benutzer Zugangsprobleme / Passwort',pri:'Medium',st:'Open',di:2,mob:true,vin:'',rsa:'',eh:'',ml:'',cr:'2026-03-08T10:00:00',up:'2026-03-16T09:00:00'},
+    {t:'Antriebsstrang: Kardanwelle Unwucht',d:'Kardanwelle zeigt Unwucht bei höheren Geschwindigkeiten.',cat:'Technisches Ticket',sub:'Antriebsstrang',pri:'High',st:'In Progress',di:3,mob:true,vin:'WF0XXXGCDX4444444',rsa:'',eh:'18000',ml:'245000',cr:'2026-03-08T14:30:00',up:'2026-03-15T11:00:00'},
+    {t:'Ersatzteil Ersetzung: Bremsscheiben VA',d:'Bremsscheiben Vorderachse unter Mindestdicke. Ersetzung unter Garantie.',cat:'Ersatzteil Ticket',sub:'Ersatzteil Ersetzung',pri:'Medium',st:'Open',di:3,mob:true,vin:'WF0XXXGCDX4444444',rsa:'',eh:'18000',ml:'245000',cr:'2026-03-09T09:00:00',up:'2026-03-14T07:00:00'},
+    {t:'Benutzer Löschen: Ausgeschiedener Mitarbeiter',d:'Mitarbeiter hat das Unternehmen verlassen. Alle Zugänge sperren.',cat:'Sonstiges Ticket',sub:'Benutzer Löschen',pri:'Low',st:'Resolved',di:3,mob:true,vin:'',rsa:'',eh:'',ml:'',cr:'2026-03-09T12:00:00',up:'2026-03-09T15:00:00'},
+    {t:'AdBlue Füllstandsensor defekt — 3 Einheiten',d:'AdBlue Sensor zeigt leer obwohl Tank voll. Motordrosselung aktiv. 3 Fahrzeuge betroffen.',cat:'Technisches Ticket',sub:'Elektronik',pri:'Critical',st:'Open',di:4,mob:false,vin:'WF0XXXGCDX5555555',rsa:'3320415',eh:'9800',ml:'132000',cr:'2026-03-10T06:30:00',up:'2026-03-17T07:30:00'},
+    {t:'Ersatzteil Ermittlung: Seitenspiegel rechts',d:'Seitenspiegel rechts abgebrochen. Teilenummer für F-MAX 500 BJ 2025 benötigt.',cat:'Ersatzteil Ticket',sub:'Ersatzteil Ermittlung',pri:'Low',st:'In Progress',di:4,mob:true,vin:'WF0XXXGCDX5555555',rsa:'',eh:'9800',ml:'132000',cr:'2026-03-10T10:00:00',up:'2026-03-16T09:00:00'},
+    {t:'Fahrzeug Außen: Rostbildung an Kotflügel',d:'Frühzeitige Rostbildung am vorderen rechten Kotflügel. Fahrzeug erst 8 Monate alt.',cat:'Technisches Ticket',sub:'Fahrzeug Außen',pri:'Medium',st:'Open',di:4,mob:true,vin:'WF0XXXGCDX5556666',rsa:'',eh:'3200',ml:'42000',cr:'2026-03-10T15:00:00',up:'2026-03-14T09:00:00'},
+    {t:'Benutzer Anlegen: Ersatzteilermittlung Zugang',d:'Neuer Mitarbeiter benötigt Zugang zur Ersatzteilermittlung.',cat:'Sonstiges Ticket',sub:'Benutzer Anlegen',pri:'Low',st:'Closed',di:4,mob:true,vin:'',rsa:'',eh:'',ml:'',cr:'2026-03-11T07:00:00',up:'2026-03-13T06:00:00'},
+    {t:'Getriebe schaltet nicht in 6. Gang',d:'Automatikgetriebe überspringt 6. Gang. Fehlerspeicher P0735.',cat:'Technisches Ticket',sub:'Antriebsstrang',pri:'High',st:'Open',di:5,mob:true,vin:'WF0XXXGCDX6666666',rsa:'',eh:'11500',ml:'155000',cr:'2026-03-11T11:00:00',up:'2026-03-18T15:00:00'},
+    {t:'Ersatzteil Reklamation: Ölfilter undicht',d:'Gelieferter Ölfilter undicht. Zwei Stück betroffen.',cat:'Ersatzteil Ticket',sub:'Ersatzteil Reklamation',pri:'Medium',st:'In Progress',di:5,mob:true,vin:'WF0XXXGCDX6666666',rsa:'',eh:'11500',ml:'155000',cr:'2026-03-11T16:00:00',up:'2026-03-15T16:00:00'},
+    {t:'Klimaanlage kühlt nicht mehr',d:'Klimakompressor läuft aber kühlt nicht. Verdacht auf defektes Expansionsventil.',cat:'Technisches Ticket',sub:'Fahrzeug Innen',pri:'Low',st:'Resolved',di:5,mob:true,vin:'WF0XXXGCDX6667777',rsa:'',eh:'7800',ml:'98000',cr:'2026-03-12T08:00:00',up:'2026-03-12T19:00:00'},
+    {t:'Fahrerhaus Aufhängung gebrochen',d:'Vordere Fahrerhausaufhängung rechts gebrochen. Fahrzeug kann nicht bewegt werden.',cat:'Technisches Ticket',sub:'Chassis',pri:'Critical',st:'Open',di:6,mob:false,vin:'WF0XXXGCDX7777777',rsa:'3321088',eh:'25000',ml:'340000',cr:'2026-03-12T12:00:00',up:'2026-03-17T08:00:00'},
+    {t:'Ersatzteil Ersetzung: Kupplung komplett',d:'Kupplungssatz vorzeitig verschlissen bei 52.000 km. Ersetzung unter Kulanz.',cat:'Ersatzteil Ticket',sub:'Ersatzteil Ersetzung',pri:'High',st:'In Progress',di:6,mob:false,vin:'WF0XXXGCDX7777777',rsa:'',eh:'25000',ml:'340000',cr:'2026-03-12T17:00:00',up:'2026-03-16T10:00:00'},
+    {t:'Blattfeder hinten rechts gebrochen',d:'Blattfeder der Hinterachse rechts gebrochen. Fahrzeug beladen stehen geblieben.',cat:'Technisches Ticket',sub:'Fahrwerk',pri:'High',st:'In Progress',di:6,mob:false,vin:'WF0XXXGCDX7778888',rsa:'3320876',eh:'19500',ml:'268000',cr:'2026-03-13T07:30:00',up:'2026-03-16T12:00:00'},
+    {t:'Benutzer Zugangsprobleme: Warranty System',d:'Warranty-Anträge können nicht eingereicht werden. Fehlermeldung beim Login.',cat:'Sonstiges Ticket',sub:'Benutzer Zugangsprobleme / Passwort',pri:'Medium',st:'Open',di:6,mob:true,vin:'',rsa:'',eh:'',ml:'',cr:'2026-03-13T10:00:00',up:'2026-03-15T10:00:00'},
+    {t:'Elektronik: Tachograph Fehlfunktion',d:'Digitaler Tachograph zeigt sporadisch Fehlermeldung.',cat:'Technisches Ticket',sub:'Elektronik',pri:'High',st:'Open',di:7,mob:true,vin:'WF0XXXGCDX8888888',rsa:'',eh:'16000',ml:'215000',cr:'2026-03-13T14:00:00',up:'2026-03-16T14:00:00'},
+    {t:'Ersatzteil Ermittlung: Stoßdämpfer HA',d:'Stoßdämpfer Hinterachse links ausgeschlagen. Teilenummer benötigt.',cat:'Ersatzteil Ticket',sub:'Ersatzteil Ermittlung',pri:'Medium',st:'Open',di:7,mob:true,vin:'WF0XXXGCDX8888888',rsa:'',eh:'16000',ml:'215000',cr:'2026-03-14T06:00:00',up:'2026-03-15T15:00:00'},
+    {t:'Seitenscheibe Beifahrer gesprungen',d:'Seitenscheibe spontan gesprungen. Kein Fremdeinwirkung erkennbar.',cat:'Technisches Ticket',sub:'Fahrzeug Außen',pri:'Low',st:'Resolved',di:7,mob:true,vin:'WF0XXXGCDX8889999',rsa:'',eh:'4500',ml:'58000',cr:'2026-03-14T09:00:00',up:'2026-03-14T12:00:00'},
+    {t:'Motor Überhitzung bei Volllast',d:'Kühlmitteltemperatur steigt über 105°C. Thermostat und Wasserpumpe geprüft.',cat:'Technisches Ticket',sub:'Antriebsstrang',pri:'Critical',st:'Open',di:8,mob:true,vin:'WF0XXXGCDX9999999',rsa:'',eh:'20000',ml:'275000',cr:'2026-03-14T15:00:00',up:'2026-03-17T07:00:00'},
+    {t:'Ersatzteil Rücksendung: Lichtmaschine',d:'Lichtmaschine defekt bei Lieferung. Keine Ladung. Rücksendung eingeleitet.',cat:'Ersatzteil Ticket',sub:'Ersatzteil Rücksendung',pri:'High',st:'In Progress',di:8,mob:false,vin:'WF0XXXGCDX9999999',rsa:'3321543',eh:'20000',ml:'275000',cr:'2026-03-15T07:00:00',up:'2026-03-16T09:00:00'},
+    {t:'Rückspiegel Heizung defekt',d:'Beheizte Außenspiegel funktionieren nicht. Sicherung OK.',cat:'Technisches Ticket',sub:'Elektronik',pri:'Low',st:'Open',di:8,mob:true,vin:'WF0XXXGCDX9990000',rsa:'',eh:'6700',ml:'88000',cr:'2026-03-15T11:00:00',up:'2026-03-15T15:00:00'},
+    {t:'Benutzer Zugangsprobleme / Passwort',d:'FODIT-Zugang gesperrt nach 3 Fehlversuchen.',cat:'Sonstiges Ticket',sub:'Benutzer Zugangsprobleme / Passwort',pri:'Low',st:'Resolved',di:8,mob:true,vin:'',rsa:'',eh:'',ml:'',cr:'2026-03-15T16:00:00',up:'2026-03-17T03:00:00'},
+    {t:'Exhaust system overheating during long haul',d:'Exhaust temperature sensors showing critical values above 650\u00B0C on highway routes. Started 3 days ago.',cat:'Technisches Ticket',sub:'Antriebsstrang',pri:'High',st:'Open',di:9,mob:true,vin:'WF0XXXGCDX0000111',rsa:'',eh:'13000',ml:'178000',cr:'2026-03-16T06:00:00',up:'2026-03-16T15:00:00'},
+    {t:'Spare part request: Air compressor seal kit',d:'Need seal kit for air compressor unit. Vehicle showing low air pressure warnings frequently.',cat:'Ersatzteil Ticket',sub:'Ersatzteil Ermittlung',pri:'High',st:'Open',di:9,mob:false,vin:'WF0XXXGCDX0000111',rsa:'3322017',eh:'13000',ml:'178000',cr:'2026-03-16T08:00:00',up:'2026-03-17T06:30:00'},
+    {t:'Dashboard warning lights intermittent',d:'Multiple warning lights appearing randomly on dashboard. No consistent pattern. Electrical issue suspected.',cat:'Technisches Ticket',sub:'Elektronik',pri:'Medium',st:'Open',di:10,mob:true,vin:'WF0XXXGCDX0000222',rsa:'',eh:'2100',ml:'28000',cr:'2026-03-16T12:00:00',up:'2026-03-17T10:00:00'},
+    {t:'Brake pad replacement needed \u2014 2 axles',d:'Front and rear axle brake pads below minimum thickness. Fleet vehicle, urgent turnaround needed.',cat:'Ersatzteil Ticket',sub:'Ersatzteil Ersetzung',pri:'Medium',st:'In Progress',di:10,mob:true,vin:'WF0XXXGCDX0000222',rsa:'',eh:'2100',ml:'28000',cr:'2026-03-16T17:00:00',up:'2026-03-16T21:00:00'},
+    {t:'Coolant leak from radiator connection',d:'Slow coolant leak detected at radiator hose connection. Temporary fix applied but needs proper repair.',cat:'Technisches Ticket',sub:'Antriebsstrang',pri:'High',st:'In Progress',di:11,mob:true,vin:'WF0XXXGCDX0000333',rsa:'',eh:'17500',ml:'232000',cr:'2026-03-17T05:30:00',up:'2026-03-17T09:30:00'},
+    {t:'New user account request',d:'New workshop technician needs access to Partnerportal and Warranty system for daily operations.',cat:'Sonstiges Ticket',sub:'Benutzer Anlegen',pri:'Low',st:'Open',di:11,mob:true,vin:'',rsa:'',eh:'',ml:'',cr:'2026-03-17T08:00:00',up:'2026-03-17T12:00:00'},
+    {t:'Lackierung: Farbunterschied nach Reparatur',d:'Nach Kabinenreparatur deutlicher Farbunterschied sichtbar.',cat:'Technisches Ticket',sub:'Lackierung',pri:'Medium',st:'Open',di:12,mob:true,vin:'WF0XXXGCDX0000444',rsa:'',eh:'8900',ml:'118000',cr:'2026-03-17T11:00:00',up:'2026-03-18T20:00:00'},
+    {t:'Ersatzteil Ersetzung: Wasserpumpe',d:'Wasserpumpe undicht. Ersetzung unter Garantie. Fahrzeug 11 Monate alt.',cat:'Ersatzteil Ticket',sub:'Ersatzteil Ersetzung',pri:'High',st:'Open',di:12,mob:true,vin:'WF0XXXGCDX0000444',rsa:'',eh:'8900',ml:'118000',cr:'2026-03-17T15:00:00',up:'2026-03-17T19:00:00'}
+  ];
+  D.forEach(d=>{const dl=DEALERS[d.di];const assignee=getAssignee(dl.name,d.cat);const assignName=getFtdName(assignee);
+    const comments=[{author:'System',text:'Ticket erstellt (Demo)',time:d.cr}];
+    const auditLog=[{who:'System',when:d.cr,what:'Ticket erstellt'}];
+    let closingDesc='',closeReason='';
+    // Staff response for non-Open tickets
+    if(d.st!=='Open'){
+      const rt=new Date(new Date(d.cr).getTime()+Math.floor(Math.random()*5+1)*3600000).toISOString();
+      comments.push({author:assignName,text:['Fehler wird analysiert.','Teilenummer wird gepr\u00FCft.','Diagnose eingeleitet.','R\u00FCckmeldung folgt.','In Bearbeitung.'][Math.floor(Math.random()*5)],time:rt});
+      auditLog.push({who:assignName,when:rt,what:'Status: Open \u2192 In Progress'});
+    }
+    // Quick staff ack for some Open tickets
+    if(d.st==='Open'&&Math.random()>0.4){
+      const rt=new Date(new Date(d.cr).getTime()+Math.floor(Math.random()*8+1)*3600000).toISOString();
+      comments.push({author:assignName,text:['Wird gepr\u00FCft.','Danke, wird bearbeitet.','R\u00FCckmeldung kommt heute.'][Math.floor(Math.random()*3)],time:rt});
+    }
+    // Dealer follow-up
+    if(d.st==='In Progress'&&Math.random()>0.5){
+      const fu=new Date(new Date(d.cr).getTime()+(Math.floor(Math.random()*3+2))*86400000).toISOString();
+      comments.push({author:dl.name.split(' ')[0],text:['Gibt es ein Update?','Kunde fragt nach Status.','Dringend - Fahrzeug steht.'][Math.floor(Math.random()*3)],time:fu});
+    }
+    // Closing data for Resolved/Closed
+    if(d.st==='Resolved'||d.st==='Closed'){
+      const reasons=['Gel\u00F6st / Resolved','Ersatzteil geliefert / Part delivered','Garantie abgewickelt / Warranty processed','Schulung durchgef\u00FChrt / Training completed','Nicht reproduzierbar / Cannot reproduce','Vom Kunden zur\u00FCckgezogen / Withdrawn'];
+      closeReason=reasons[Math.floor(Math.random()*reasons.length)];
+      const descs=['Problem durch Software-Update behoben.','Ersatzteil geliefert und eingebaut.','Garantieanspruch genehmigt.','Passwort zur\u00FCckgesetzt.','Reparatur erfolgreich.','Komponente getauscht.','Lackierung erneuert.'];
+      closingDesc=descs[Math.floor(Math.random()*descs.length)];
+      const ct=new Date(new Date(d.up).getTime()-3600000).toISOString();
+      comments.push({author:assignName,text:'Abgeschlossen: '+closingDesc,time:ct});
+      auditLog.push({who:assignName,when:d.up,what:'Closed: '+closeReason.split(' / ')[0]});
+    }
+    tickets.push({id:nextTid,ticketNo:'FTD-'+String(nextTid).padStart(4,'0'),title:d.t,description:d.d,category:d.cat,subcat:d.sub,priority:d.pri,status:d.st,dealerName:dl.name,dealerCity:dl.city,assignedTo:assignee,mobilized:d.mob,vin:d.vin,rsaJobNo:d.rsa,engineHours:d.eh,mileage:d.ml,media:[],comments,auditLog,created:d.cr,updated:d.up,closingDesc,closeReason});nextTid++});
+  saveState();
+}
+
+function fmtDate(i){if(!i)return'\u2014';return new Date(i).toLocaleDateString('de-DE',{day:'2-digit',month:'short',year:'numeric'})}
+function fmtDT(i){if(!i)return'\u2014';const d=new Date(i);return d.toLocaleDateString('de-DE',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}
+function timeAgo(i){const d=Date.now()-new Date(i).getTime();const m=Math.floor(d/60000);if(m<60)return m+'m';const h=Math.floor(m/60);if(h<24)return h+'h';const days=Math.floor(h/24);if(days<7)return days+'d';return new Date(i).toLocaleDateString('de-DE',{day:'2-digit',month:'short',year:'numeric'})}
+function getVisible(){if(!currentUser)return[];return currentUser.type==='ftd'?tickets:tickets.filter(t=>t.dealerName===currentUser.dealerName)}
+function isFtd(){return currentUser&&currentUser.type==='ftd'}
+function onHoliday(fid){const n=new Date();return holidays.some(h=>h.fid===fid&&new Date(h.from)<=n&&new Date(h.to)>=n)}
+function getAssignee(dn,cat){
+  const dl=DEALERS.find(d=>d.name===dn);if(!dl)return HEAD_OF_AS;
+  let p='';
+  if(cat==='Technisches Ticket')p=dl.tech;
+  else if(cat==='Ersatzteil Ticket')p=dl.parts;
+  else p=dl.claim;
+  if(!p)return HEAD_OF_AS;
+  // Match first name from dealer data to full name in FTD_TEAM
+  const pl=p.toLowerCase();
+  const m=FTD_TEAM.find(x=>x.name.toLowerCase()===pl||x.name.toLowerCase().startsWith(pl+' ')||x.name.split(' ')[0].toLowerCase()===pl);
+  if(!m)return HEAD_OF_AS;
+  if(onHoliday(m.id))return HEAD_OF_AS;
+  return m.id;
+}
+function getFtdName(id){const m=FTD_TEAM.find(x=>x.id===id);return m?m.name:'\u2014'}
+function clickTNo(tno){const t=tickets.find(x=>x.ticketNo===tno);if(t)openDetail(t.id)}
+function linkTNo(tno){return '<span style="color:var(--ford-blue);cursor:pointer;text-decoration:underline;font-family:var(--mono);font-size:11px" onclick="clickTNo(\''+tno+'\')">'+tno+'</span>'}
+function addLog(id,who,what){const t=tickets.find(x=>x.id===id);if(t){t.auditLog=t.auditLog||[];t.auditLog.push({who,when:new Date().toISOString(),what});t.updated=new Date().toISOString()}}
+function addNotif(forUser,msg,ticketId){notifications.push({id:Date.now(),forUser,msg,ticketId,read:false,time:new Date().toISOString()})}
+function toggleTheme(){const t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',t)}
+
+function doLogin(){
+  const t=document.querySelector('input[name="loginType"]:checked')?.value||'ftd';
+  if(t==='ftd'){const id=document.getElementById('loginUser').value;const m=FTD_TEAM.find(x=>x.id===id);currentUser={type:'ftd',id:m.id,name:m.name,isAdmin:m.isAdmin}}
+  else{const idx=parseInt(document.getElementById('loginDealer').value);const d=DEALERS[idx];currentUser={type:'dealer',id:'dealer_'+idx,name:d.name,dealerName:d.name,dealerCity:d.city,isAdmin:false}}
+  renderApp();
+}
+function doLogout(){currentUser=null;renderApp()}
+function getStats(){const t=getVisible();return{total:t.length,open:t.filter(x=>x.status==='Open').length,inProgress:t.filter(x=>x.status==='In Progress').length,resolved:t.filter(x=>x.status==='Resolved').length}}
+function switchTab(t){currentTab=t;renderApp()}
+
+function renderApp(){
+  if(!currentUser){document.getElementById('app').innerHTML=`
+    <div class="login-wrap"><div class="login-card">
+    <div class="login-logo"><img src="${LOGO}" alt="F-Trucks"><h2>AfterSales Ticket System</h2><p>F-Trucks Deutschland GmbH</p></div>
+    <div class="form-group"><label>Login als</label>
+    <div style="display:flex;gap:10px;margin-bottom:10px">
+      <label style="font-size:13px;display:flex;align-items:center;gap:4px"><input type="radio" name="loginType" value="ftd" checked onchange="document.getElementById('ftdLogin').style.display='block';document.getElementById('dealerLogin').style.display='none'"> F-Trucks Deutschland</label>
+      <label style="font-size:13px;display:flex;align-items:center;gap:4px"><input type="radio" name="loginType" value="dealer" onchange="document.getElementById('ftdLogin').style.display='none';document.getElementById('dealerLogin').style.display='block'"> Sub-Dealer</label>
+    </div>
+    <div id="ftdLogin"><select id="loginUser" class="form-group" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font)">${FTD_TEAM.map(m=>`<option value="${m.id}">${m.name} \u2014 ${m.role}</option>`).join('')}</select></div>
+    <div id="dealerLogin" style="display:none"><select id="loginDealer" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font)">${DEALERS.map((d,i)=>`<option value="${i}">${d.name} \u2014 ${d.city}</option>`).join('')}</select></div></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="doLogin()">${L('Anmelden','Login')}</button>
+    <div id="loginInstall" style="display:none;margin-top:12px;padding:10px;background:var(--bg);border-radius:var(--radius-sm);text-align:center;border:1px dashed var(--border)">
+      <p style="font-size:11px;color:var(--text-sec);margin-bottom:6px">\uD83D\uDCF2 ${L('Als App installieren f\u00FCr schnellen Zugriff','Install as app for quick access')}</p>
+      <button onclick="installPWA()" style="background:var(--ford-blue);color:#fff;border:none;padding:6px 16px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">${L('App installieren','Install App')}</button>
+    </div>
+    </div></div>`;return}
+  
+  const s=getStats();const ur=notifications.filter(n=>n.forUser===currentUser?.id&&!n.read).length;
+  const myN=notifications.filter(n=>n.forUser===currentUser?.id).sort((a,b)=>new Date(b.time)-new Date(a.time));
+  document.getElementById('app').innerHTML=`
+    <div class="topbar"><div class="topbar-brand"><span>F-Trucks Deutschland</span></div>
+    <div class="topbar-right"><button id="installBtn" onclick="installPWA()" style="display:none;background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:5px 12px;border-radius:var(--radius-sm);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);align-items:center;gap:4px">\uD83D\uDCF2 Install App</button><button onclick="openNewTicket()" style="background:var(--ford-orange);color:#fff;border:none;padding:6px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">+ ${L('Neues Ticket','New Ticket')}</button><div class="icon-btn" onclick="toggleTheme()">\uD83C\uDF13</div><div class="icon-btn" onclick="toggleNotif()">\uD83D\uDD14<span class="notif-badge" style="display:${ur?'flex':'none'}">${ur}</span></div><div style="font-size:12px;font-weight:500;opacity:0.9">${currentUser.name}</div><div class="topbar-avatar" onclick="doLogout()" title="Logout">${currentUser.name.substring(0,2).toUpperCase()}</div></div></div>
+    <div class="notif-panel" id="notifPanel"><div class="notif-panel-hdr"><span>${L('Benachrichtigungen','Notifications')}</span><span style="font-size:11px;color:var(--ford-orange);cursor:pointer" onclick="markRead()">${L('Alle gelesen','Mark all read')}</span></div>${myN.length?myN.slice(0,15).map(n=>`<div class="notif-item ${n.read?'':'unread'}" onclick="openNT(${n.ticketId},${n.id})"><p>${n.msg}</p><div class="notif-time">${fmtDT(n.time)}</div></div>`).join(''):'<div style="padding:20px;text-align:center;color:var(--text-mut);font-size:12px">Keine</div>'}</div>
+    <div class="tab-nav">
+      <button class="tab-btn ${currentTab==='dashboard'?'active':''}" onclick="switchTab('dashboard')">Dashboard</button>
+      <button class="tab-btn ${currentTab==='all'?'active':''}" onclick="switchTab('all')">${L('Alle','All')} <span class="badge">${s.total}</span></button>
+      <button class="tab-btn ${currentTab==='open'?'active':''}" onclick="switchTab('open')">${L('Offen','Open')} <span class="badge">${s.open}</span></button>
+      <button class="tab-btn ${currentTab==='in-progress'?'active':''}" onclick="switchTab('in-progress')">${L('In Bearbeitung','In Progress')} <span class="badge">${s.inProgress}</span></button>
+      <button class="tab-btn ${currentTab==='resolved'?'active':''}" onclick="switchTab('resolved')">${L('Erledigt','Resolved/Closed')} <span class="badge">${s.resolved}</span></button>
+      ${isFtd()?`<button class="tab-btn ${currentTab==='analytics'?'active':''}" onclick="switchTab('analytics')">\uD83D\uDCCA ${L('Analyse','Analytics')}</button><button class="tab-btn ${currentTab==='settings'?'active':''}" onclick="switchTab('settings')">\u2699 ${L('Einstellungen','Settings')}</button>`:''}
+    </div>
+    <div class="main" id="mc"></div>
+    <div class="detail-overlay" id="dOverlay" onclick="closeDetail()"></div><div class="detail-panel" id="dPanel"></div>
+    <div class="modal-overlay" id="mOverlay"></div><div class="lightbox" id="lb" onclick="closeLB()"></div>
+`;
+  renderContent();
+}
+
+function renderContent(){const mc=document.getElementById('mc');if(!mc)return;if(currentTab==='dashboard')renderDash(mc);else if(currentTab==='settings')renderSettings(mc);else if(currentTab==='analytics')renderAnalytics(mc);else renderList(mc)}
+
+function renderDash(mc){
+  const s=getStats();const recent=getVisible().sort((a,b)=>new Date(b.updated)-new Date(a.updated)).slice(0,5);
+  mc.innerHTML=`<div class="stats-row">
+    <div class="stat-card"><div class="stat-label">${L('Offen','Open')}</div><div class="stat-value" style="color:var(--info)">${s.open}</div></div>
+    <div class="stat-card"><div class="stat-label">${L('In Bearbeitung','In Progress')}</div><div class="stat-value" style="color:var(--warning)">${s.inProgress}</div></div>
+    <div class="stat-card"><div class="stat-label">${L('Erledigt','Resolved')}</div><div class="stat-value" style="color:var(--success)">${s.resolved}</div></div>
+    <div class="stat-card"><div class="stat-label">${L('Gesamt','Total')}</div><div class="stat-value">${s.total}</div></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><strong>${L('Letzte Aktivit\u00E4t','Recent Activity')}</strong></div>
+  <div class="ticket-grid">${recent.map(t=>tCard(t)).join('')}</div>`;
+}
+
+function renderList(mc){
+  const cats=CATEGORIES;const pris=PRIORITIES;
+  mc.innerHTML=`<div class="filter-bar">
+    <input type="text" class="filter-search" id="fSearch" placeholder="${L('Suchen','Search')}..." onkeyup="filterList()">
+    <select class="filter-select" id="fCat" onchange="filterList()"><option value="">${L('Alle Kategorien','All Categories')}</option>${cats.map(c=>`<option>${c}</option>`).join('')}</select>
+    <select class="filter-select" id="fPri" onchange="filterList()"><option value="">${L('Alle Priorit\u00E4ten','All Priorities')}</option>${pris.map(p=>`<option>${p}</option>`).join('')}</select>
+  </div><div id="tList"></div>`;
+  filterList();
+}
+function filterList(){
+  let f=getVisible();const q=(document.getElementById('fSearch')?.value||'').toLowerCase();
+  const cat=document.getElementById('fCat')?.value;const pri=document.getElementById('fPri')?.value;
+  if(currentTab==='open')f=f.filter(t=>t.status==='Open');
+  else if(currentTab==='in-progress')f=f.filter(t=>t.status==='In Progress');
+  else if(currentTab==='resolved')f=f.filter(t=>t.status==='Resolved'||t.status==='Closed');
+  if(q)f=f.filter(t=>t.title.toLowerCase().includes(q)||t.description.toLowerCase().includes(q)||t.ticketNo.toLowerCase().includes(q)||t.dealerName.toLowerCase().includes(q));
+  if(cat)f=f.filter(t=>t.category===cat);if(pri)f=f.filter(t=>t.priority===pri);
+  f.sort((a,b)=>new Date(b.updated)-new Date(a.updated));
+  document.getElementById('tList').innerHTML=f.length?'<div class="ticket-grid">'+f.map(t=>tCard(t)).join('')+'</div>':'<div class="empty-state"><h3>'+L('Keine Tickets','No tickets')+'</h3></div>';
+}
+
+function tCard(t){
+  const sMap={'Open':'tag-open','In Progress':'tag-progress','Resolved':'tag-resolved','Closed':'tag-closed'};
+  const sIcon={'Open':'\u25CB','In Progress':'\u25D4','Resolved':'\u2705','Closed':'\uD83D\uDD12'};
+  const pMap={'Critical':'tag-critical','High':'tag-high','Medium':'tag-medium','Low':'tag-low'};
+  return `<div class="ticket-card p-${t.priority.toLowerCase()}" onclick="openDetail(${t.id})">
+    <div class="ticket-header"><span class="ticket-id">${t.ticketNo}</span><span class="ticket-date">${timeAgo(t.updated)}</span></div>
+    <div class="ticket-title">${t.title}</div>
+    <div style="font-size:11px;color:var(--ford-orange);font-weight:600;margin-bottom:4px">\uD83C\uDFE2 ${t.dealerName}${t.dealerCity?' \u2014 '+t.dealerCity:''}</div>
+    <div class="ticket-desc">${t.description}</div>
+    <div class="ticket-meta"><span class="tag ${sMap[t.status]||''}">${sIcon[t.status]||''} ${t.status}</span><span class="tag ${pMap[t.priority]||''}">${t.priority}</span><span class="tag tag-cat">${t.category.split(' ')[0]}</span><span class="tag ${t.mobilized?'tag-mob':'tag-immob'}">${t.mobilized?'Mob':'Immob'}</span>${(t.media||[]).length?`<span class="tag tag-media">\uD83D\uDCCE${t.media.length}</span>`:''}</div></div>`;
+}
+
+function openDetail(id){
+  const t=tickets.find(x=>x.id===id);if(!t)return;
+  const sMap={'Open':'tag-open','In Progress':'tag-progress','Resolved':'tag-resolved','Closed':'tag-closed'};
+  const pMap={'Critical':'tag-critical','High':'tag-high','Medium':'tag-medium','Low':'tag-low'};
+  const ce=isFtd();
+  const all=[...(t.comments||[]).map(c=>({...c,atype:'c'})),...(t.auditLog||[]).map(a=>({author:a.who,text:a.what,time:a.when,atype:'a'}))].sort((a,b)=>new Date(b.time)-new Date(a.time));
+  document.getElementById('dPanel').innerHTML=`
+    <div class="detail-hdr"><h3>${t.ticketNo}</h3><div style="display:flex;gap:6px;align-items:center"><button class="btn btn-sm btn-secondary" onclick="showTranslate(${id})" title="Translate" style="font-size:12px;padding:4px 10px">\uD83C\uDF10 <span style="background:#0F2B46;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:3px">DeepL</span></button><button class="close-btn" onclick="closeDetail()">\u2715</button></div></div>
+    <div class="detail-body">
+      <div class="detail-section"><div class="ticket-title" style="font-size:16px;margin-bottom:10px">${t.title}</div>
+        <div class="detail-grid">
+          <div class="detail-field"><label>Status</label><span class="tag ${sMap[t.status]||''}">${{'Open':'\u25CB','In Progress':'\u25D4','Resolved':'\u2705','Closed':'\uD83D\uDD12'}[t.status]||''} ${t.status}</span></div>
+          <div class="detail-field"><label>${L('Priorit\u00E4t','Priority')}</label><span class="tag ${pMap[t.priority]||''}">${t.priority}</span></div>
+          <div class="detail-field"><label>${L('Kategorie','Category')}</label><span>${t.category}</span></div>
+          <div class="detail-field"><label>${L('Unterkategorie','Subcategory')}</label><span>${t.subcat||'\u2014'}</span></div>
+          <div class="detail-field"><label>Sub-Dealer</label><span>${t.dealerName}</span></div>
+          <div class="detail-field"><label>${L('Stadt','City')}</label><span>${t.dealerCity||'\u2014'}</span></div>
+          <div class="detail-field"><label>${L('Zugewiesen','Assigned')}</label><span>${getFtdName(t.assignedTo)}</span></div>
+          <div class="detail-field"><label>${L('Erstellt','Created')}</label><span>${fmtDate(t.created)}</span></div>
+          <div class="detail-field"><label>${L('Fahrzeug','Vehicle')}</label><span class="tag ${t.mobilized?'tag-mob':'tag-immob'}">${t.mobilized?L('Mobilisiert','Mobilized'):L('Immobilisiert','Immobilized')}</span></div>
+          ${t.vin?`<div class="detail-field"><label>VIN</label><span style="font-family:var(--mono);font-size:11px">${t.vin}</span></div>`:''}
+          ${t.rsaJobNo?`<div class="detail-field"><label>${L('Pannenfall Nr.','RSA Job No.')}</label><span style="font-family:var(--mono);font-size:11px">${t.rsaJobNo}</span></div>`:''}
+          ${t.engineHours?`<div class="detail-field"><label>${L('Motorstunden','Engine Hours')}</label><span>${t.engineHours} h</span></div>`:''}
+          ${t.mileage?`<div class="detail-field"><label>${L('Kilometerstand','Mileage')}</label><span>${Number(t.mileage).toLocaleString('de-DE')} km</span></div>`:''}
+        </div></div>
+      ${t.extra&&t.extra.probDate?`<div class="detail-section"><div class="detail-section-title">${L('Technische Details','Technical Details')}</div>
+        <div class="detail-grid">
+          <div class="detail-field"><label>${L('Problem erstmalig','First Occurred')}</label><span>${fmtDate(t.extra.probDate)}</span></div>
+        </div>
+        <div style="margin-top:8px"><label style="font-size:10px;color:var(--text-mut);display:block;margin-bottom:2px">${L('Schritte gepr\u00FCft','Steps Checked')}</label><div class="detail-desc">${t.extra.stepsChecked}</div></div></div>`:''}
+      ${t.extra&&t.extra.partNo?`<div class="detail-section"><div class="detail-section-title">${L('Ersatzteil Details','Part Details')}</div>
+        <div class="detail-field"><label>${L('Ersatzteilnummer','Part Number')}</label><span style="font-family:var(--mono);font-size:13px;font-weight:600">${t.extra.partNo}</span></div></div>`:''}
+      ${t.extra&&(t.extra.newFirst||t.extra.delUsername||t.extra.accUsername)?`<div class="detail-section"><div class="detail-section-title">${L('Benutzer Details','User Details')}</div>
+        <div class="detail-grid">
+          ${t.extra.newFirst?`<div class="detail-field"><label>${L('Vorname','First Name')}</label><span>${t.extra.newFirst}</span></div>`:''}
+          ${t.extra.newLast?`<div class="detail-field"><label>${L('Nachname','Last Name')}</label><span>${t.extra.newLast}</span></div>`:''}
+          ${t.extra.newEmail?`<div class="detail-field"><label>E-Mail</label><span>${t.extra.newEmail}</span></div>`:''}
+          ${t.extra.newFunc?`<div class="detail-field"><label>${L('Funktion','Function')}</label><span>${t.extra.newFunc}</span></div>`:''}
+          ${t.extra.delUsername?`<div class="detail-field"><label>${L('Benutzername','Username')}</label><span style="font-family:var(--mono)">${t.extra.delUsername}</span></div>`:''}
+          ${t.extra.accUsername?`<div class="detail-field"><label>${L('Benutzername','Username')}</label><span style="font-family:var(--mono)">${t.extra.accUsername}</span></div>`:''}
+          ${t.extra.systems&&t.extra.systems.length?`<div class="detail-field" style="grid-column:1/-1"><label>${L('Systeme','Systems')}</label><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px">${t.extra.systems.map(s=>`<span class="tag tag-cat" style="font-size:10px">${s}</span>`).join('')}</div></div>`:''}
+        </div></div>`:''}
+      <div class="detail-section"><div class="detail-section-title">${L('Beschreibung','Description')}</div><div class="detail-desc">${t.description}</div></div>
+      ${t.closingDesc?`<div class="detail-section"><div class="detail-section-title">${L('Abschluss','Closing Description')}</div><div class="detail-desc">${t.closingDesc}${t.closeReason?'<br><strong>'+L('Grund','Reason')+':</strong> '+t.closeReason:''}</div></div>`:''}
+      ${(t.media&&t.media.length)?`<div class="detail-section"><div class="detail-section-title">${L('Anh\u00E4nge','Attachments')} (${t.media.length})</div><div class="file-previews">${t.media.map((m,i)=>m.type?.startsWith('video')?`<div class="file-preview" onclick="openLB2(${id},${i})">\u25B6MP4</div>`:m.type==='application/pdf'?`<div class="file-preview">PDF</div>`:`<div class="file-preview" onclick="openLB2(${id},${i})"><img src="${m.data}"></div>`).join('')}</div></div>`:''}
+      <div class="detail-section"><div class="detail-section-title">${L('Verlauf','History')} (${all.length})</div>
+        <div class="activity-list">${all.map(c=>`<div class="activity-item"><div class="activity-avatar">${c.author.substring(0,2).toUpperCase()}</div><div class="activity-content"><span class="activity-author">${c.author}</span><span class="activity-time">${fmtDT(c.time)}</span>${c.atype==='a'?`<div class="activity-change">\uD83D\uDD04 ${c.text}</div>`:`<div class="activity-text">${c.text}</div>`}</div></div>`).join('')}</div>
+        <div class="comment-input"><input type="text" id="cInput" placeholder="${L('Kommentar','Comment')}..." onkeydown="if(event.key==='Enter')addComment(${id})"><button class="btn btn-primary btn-sm" onclick="addComment(${id})">${L('Senden','Send')}</button></div></div>
+    </div>
+    <div class="detail-footer">
+      <div style="width:100%;margin-bottom:6px;padding:6px 10px;background:var(--bg);border-radius:var(--radius-sm);font-size:10px;color:var(--text-mut)">${STATUS_FLOW}</div>
+      <select class="filter-select" id="stChange" onchange="chgStatus(${id})" style="flex:1">${STATUSES.map(s=>`<option value="${s}" ${s===t.status?'selected':''}>${langMode==='de'?STATUS_LABELS[s].split(' / ')[0]:STATUS_LABELS[s]}</option>`).join('')}</select>
+      <div style="font-size:10px;color:var(--text-mut);width:100%;margin-bottom:4px">\u2139\uFE0F ${STATUS_HINTS[t.status]}</div>
+      ${ce?`<button class="btn btn-secondary btn-sm" onclick="editTicket(${id})">${L('Bearbeiten','Edit')}</button>`:''}
+      ${t.status==='Resolved'&&!t.closingDesc?`<button class="btn btn-success btn-sm" onclick="showCloseModal(${id})">\uD83D\uDD12 ${L('Archivieren','Archive & Close')}</button>`:''}
+      ${ce&&t.status==='Closed'&&currentUser.isAdmin?`<button class="btn btn-ford btn-sm" onclick="reopen(${id})">${L('Wieder\u00F6ffnen','Reopen')}</button>`:''}
+      ${ce?`<button class="btn btn-secondary btn-sm" onclick="reassign(${id})">${L('Zuweisen','Assign')}</button>`:''}
+    </div>`;
+  document.getElementById('dOverlay').classList.add('active');document.getElementById('dPanel').classList.add('active');
+}
+
+function closeDetail(){document.getElementById('dOverlay').classList.remove('active');document.getElementById('dPanel').classList.remove('active')}
+
+function showTranslate(id){
+  const t=tickets.find(x=>x.id===id);if(!t)return;
+  const deWords=['der','die','das','und','bei','ist','nicht','ein','mit','von','f\u00FCr','auf','wird','wurde','zum','zur','dem','den','des','nach','sich','aus','auch','wie','noch','werden','hat','ich','wir','sie','sind','kann','diese','einem','einer','haben','nur','oder','aber','vor','schon','wenn','mehr','keine','durch','bereits'];
+  const words=(t.title+' '+t.description).toLowerCase().split(/\s+/);
+  const deScore=words.filter(w=>deWords.includes(w)).length;
+  const hasUmlauts=/[\u00E4\u00F6\u00FC\u00DF\u00C4\u00D6\u00DC]/.test(t.title+t.description);
+  const isDE=deScore>=3||hasUmlauts;
+  
+  // Mock translation dictionary EN→DE
+  const mockTrans={
+    'Exhaust system overheating during long haul':'Abgasanlage \u00FCberhitzt bei Langstreckenfahrten',
+    'Exhaust temperature sensors showing critical values above 650°C on highway routes. Started 3 days ago.':'Abgastemperatursensoren zeigen kritische Werte \u00FCber 650\u00B0C auf Autobahnstrecken. Seit 3 Tagen.',
+    'Brake pad replacement needed — 2 axles':'Bremsbelagwechsel erforderlich \u2014 2 Achsen',
+    'Front and rear axle brake pads below minimum thickness. Fleet vehicle, urgent turnaround needed.':'Vorder- und Hinterachse Bremsbel\u00E4ge unter Mindestst\u00E4rke. Flottenfahrzeug, dringender Wechsel erforderlich.',
+    'Dashboard warning lights intermittent':'Armaturenbrett-Warnleuchten sporadisch',
+    'Multiple warning lights appearing randomly on dashboard. No consistent pattern. Electrical issue suspected.':'Mehrere Warnleuchten erscheinen zuf\u00E4llig am Armaturenbrett. Kein einheitliches Muster. Elektrisches Problem vermutet.',
+    'Spare part request: Air compressor seal kit':'Ersatzteil-Anfrage: Luftkompressor-Dichtungssatz',
+    'Need seal kit for air compressor unit. Vehicle showing low air pressure warnings frequently.':'Dichtungssatz f\u00FCr Luftkompressoreinheit ben\u00F6tigt. Fahrzeug zeigt h\u00E4ufig Niederdruckwarnungen.',
+    'New user account request':'Neuer Benutzer-Zugang angefordert',
+    'New workshop technician needs access to Partnerportal and Warranty system for daily operations.':'Neuer Werkstatttechniker ben\u00F6tigt Zugang zu Partnerportal und Warranty-System f\u00FCr den t\u00E4glichen Betrieb.',
+    'Coolant leak from radiator connection':'K\u00FChlmittelverlust an Radiatoranschluss',
+    'Slow coolant leak detected at radiator hose connection. Temporary fix applied but needs proper repair.':'Langsamer K\u00FChlmittelverlust am K\u00FChlerschlauchanschluss festgestellt. Tempor\u00E4re Reparatur durchgef\u00FChrt, dauerhafte Reparatur erforderlich.'
+  };
+  
+  if(isDE){
+    document.getElementById('mOverlay').innerHTML=`<div class="modal"><div class="modal-hdr"><h3>\uD83C\uDF10 Translation</h3><button class="close-btn" onclick="closeModal()">\u2715</button></div>
+      <div class="modal-body">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <span style="background:#0F2B46;color:#fff;font-size:11px;padding:3px 10px;border-radius:4px;font-weight:700">DeepL</span>
+          <span style="font-size:12px;color:var(--success);font-weight:600">\u2705 ${L('Originaltext ist bereits auf Deutsch','Original text is already in German')}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-sec);padding:12px;background:var(--bg);border-radius:var(--radius-sm)">
+          ${L('Eine \u00DCbersetzung ist nicht erforderlich, da der Originaltext bereits in deutscher Sprache verfasst ist.','No translation needed \u2014 the original text is already written in German.')}
+        </div>
+      </div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">OK</button></div></div>`;
+  } else {
+    const translatedTitle=mockTrans[t.title]||'[DE] '+t.title;
+    const translatedDesc=mockTrans[t.description]||'[DE] '+t.description;
+    document.getElementById('mOverlay').innerHTML=`<div class="modal"><div class="modal-hdr"><h3>\uD83C\uDF10 Translation EN \u2192 DE</h3><button class="close-btn" onclick="closeModal()">\u2715</button></div>
+      <div class="modal-body">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <span style="background:#0F2B46;color:#fff;font-size:11px;padding:3px 10px;border-radius:4px;font-weight:700">DeepL</span>
+          <span style="font-size:12px;color:var(--ford-orange);font-weight:600">PoC Demo \u2014 Mock Translation</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-mut);margin-bottom:14px;padding:8px;background:var(--bg);border-radius:var(--radius-sm);border:1px dashed var(--border)">
+          \u2139\uFE0F In production, this will use F-Trucks Deutschland's DeepL API subscription for real-time translation.
+        </div>
+        <div class="form-group"><label style="font-size:11px;color:var(--text-mut)">Original (EN)</label><div style="padding:8px 12px;background:var(--bg);border-radius:var(--radius-sm);font-size:13px;border:1px solid var(--border)">${t.title}</div></div>
+        <div class="form-group"><label style="font-size:11px;color:var(--ford-orange)">\u00DCbersetzung / Translation (DE) <span style="background:#0F2B46;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px">DeepL</span></label><div style="padding:8px 12px;background:var(--bg);border-radius:var(--radius-sm);font-size:13px;border:1px solid var(--ford-orange)">${translatedTitle}</div></div>
+        <div class="form-group"><label style="font-size:11px;color:var(--text-mut)">Original Description (EN)</label><div style="padding:8px 12px;background:var(--bg);border-radius:var(--radius-sm);font-size:12px;border:1px solid var(--border)">${t.description}</div></div>
+        <div class="form-group"><label style="font-size:11px;color:var(--ford-orange)">\u00DCbersetzung / Translation (DE) <span style="background:#0F2B46;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px">DeepL</span></label><div style="padding:8px 12px;background:var(--bg);border-radius:var(--radius-sm);font-size:12px;border:1px solid var(--ford-orange)">${translatedDesc}</div></div>
+      </div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">Close</button></div></div>`;
+  }
+  document.getElementById('mOverlay').classList.add('active');
+}
+
+function addComment(id){const inp=document.getElementById('cInput');const txt=inp.value.trim();if(!txt)return;const t=tickets.find(x=>x.id===id);if(!t)return;t.comments=t.comments||[];t.comments.push({author:currentUser.name,text:txt,time:new Date().toISOString()});addLog(id,currentUser.name,'Kommentar');addNotif(t.assignedTo,t.ticketNo+': Kommentar von '+currentUser.name,id);saveState();openDetail(id);renderApp()}
+function chgStatus(id){const t=tickets.find(x=>x.id===id);if(!t)return;const ns=document.getElementById('stChange').value;if(ns===t.status)return;
+  if(ns==='Closed'){showCloseModal(id);return}
+  const os=t.status;t.status=ns;addLog(id,currentUser.name,'Status: '+os+' \u2192 '+ns);addNotif(t.assignedTo,t.ticketNo+' Status: '+ns,id);saveState();openDetail(id);renderApp()}
+function showCloseModal(id){
+  const t=tickets.find(x=>x.id===id);if(!t)return;
+  document.getElementById('mOverlay').innerHTML=`<div class="modal"><div class="modal-hdr"><h3>${L('Ticket schlie\u00DFen','Close Ticket')} \u2014 ${t.ticketNo}</h3><button class="close-btn" onclick="closeModal()">\u2715</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>${L('Abschlussbeschreibung','Closing Description')} *</label><textarea id="closeDesc" rows="4" placeholder="${L('Was wurde gemacht?','What was done?')}"></textarea></div>
+      <div class="form-group"><label>${L('Grund','Reason')} *</label><select id="closeReason" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text);font-size:13px;font-family:var(--font)">${CLOSE_REASONS.map(r=>`<option value="${r}">${r}</option>`).join('')}</select></div>
+    </div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">${L('Abbrechen','Cancel')}</button><button class="btn btn-primary" onclick="doCloseTicket(${id})">${L('Schlie\u00DFen','Close')}</button></div></div>`;
+  document.getElementById('mOverlay').classList.add('active');
+}
+function doCloseTicket(id){const desc=document.getElementById('closeDesc').value.trim();const reason=document.getElementById('closeReason').value;if(!desc)return;const t=tickets.find(x=>x.id===id);if(!t)return;t.status='Closed';t.closingDesc=desc;t.closeReason=reason;addLog(id,currentUser.name,'Closed: '+reason);saveState();closeModal();openDetail(id);renderApp()}
+function reopen(id){const t=tickets.find(x=>x.id===id);if(!t)return;t.status='Open';t.closingDesc='';addLog(id,currentUser.name,'Reopened');saveState();openDetail(id);renderApp()}
+function reassign(id){const t=tickets.find(x=>x.id===id);if(!t)return;
+  document.getElementById('mOverlay').innerHTML=`<div class="modal"><div class="modal-hdr"><h3>${L('Zuweisen','Assign')} \u2014 ${t.ticketNo}</h3><button class="close-btn" onclick="closeModal()">\u2715</button></div>
+    <div class="modal-body"><div class="form-group"><label>${L('Neu zuweisen an','Assign to')}</label><select id="reassignTo" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text);font-size:13px;font-family:var(--font)">${FTD_TEAM.map(m=>`<option value="${m.id}" ${m.id===t.assignedTo?'selected':''}>${m.name} \u2014 ${m.role}${onHoliday(m.id)?' \uD83C\uDFD6\uFE0F':''}</option>`).join('')}</select></div></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">${L('Abbrechen','Cancel')}</button><button class="btn btn-primary" onclick="doReassign(${id})">${L('Zuweisen','Assign')}</button></div></div>`;
+  document.getElementById('mOverlay').classList.add('active');
+}
+function doReassign(id){const t=tickets.find(x=>x.id===id);if(!t)return;const nid=document.getElementById('reassignTo').value;const m=FTD_TEAM.find(x=>x.id===nid);if(!m||nid===t.assignedTo){closeModal();return}const old=t.assignedTo;t.assignedTo=nid;addLog(id,currentUser.name,'Assigned: '+getFtdName(old)+' \u2192 '+m.name);addNotif(nid,t.ticketNo+' assigned',id);saveState();closeModal();openDetail(id);renderApp()}
+
+function editTicket(id){
+  if(!isFtd())return;const t=tickets.find(x=>x.id===id);if(!t)return;
+  document.getElementById('mOverlay').innerHTML=`<div class="modal"><div class="modal-hdr"><h3>${L('Bearbeiten','Edit')} \u2014 ${t.ticketNo}</h3><button class="close-btn" onclick="closeModal()">\u2715</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>${L('Titel','Title')}</label><input type="text" id="eTitle" value="${t.title}"></div>
+      <div class="form-group"><label>${L('Beschreibung','Description')}</label><textarea id="eDesc" rows="3">${t.description}</textarea></div>
+      <div class="form-row"><div class="form-group"><label>${L('Kategorie','Category')}</label><select id="eCat">${CATEGORIES.map(c=>`<option ${c===t.category?'selected':''}>${c}</option>`).join('')}</select></div>
+      <div class="form-group"><label>${L('Priorit\u00E4t','Priority')}</label><select id="ePri">${PRIORITIES.map(p=>`<option ${p===t.priority?'selected':''}>${p}</option>`).join('')}</select></div></div>
+      <div class="form-row"><div class="form-group"><label>${L('Fahrzeugstatus','Vehicle Status')}</label><select id="eMob"><option value="true" ${t.mobilized?'selected':''}>${L('Mobilisiert','Mobilized')}</option><option value="false" ${!t.mobilized?'selected':''}>${L('Immobilisiert','Immobilized')}</option></select></div>
+      <div class="form-group"><label>VIN</label><input type="text" id="eVin" value="${t.vin||''}"></div></div>
+    </div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">${L('Abbrechen','Cancel')}</button><button class="btn btn-primary" onclick="saveEdit(${id})">${L('Speichern','Save')}</button></div></div>`;
+  document.getElementById('mOverlay').classList.add('active');
+}
+function saveEdit(id){const t=tickets.find(x=>x.id===id);if(!t)return;
+  const nT=document.getElementById('eTitle').value.trim();const nD=document.getElementById('eDesc').value.trim();
+  const nC=document.getElementById('eCat').value;const nP=document.getElementById('ePri').value;
+  const nM=document.getElementById('eMob').value==='true';const nV=document.getElementById('eVin').value.trim();
+  if(nT!==t.title){addLog(id,currentUser.name,'Title changed');t.title=nT}
+  if(nD!==t.description){addLog(id,currentUser.name,'Description changed');t.description=nD}
+  if(nC!==t.category){addLog(id,currentUser.name,'Category: '+t.category+' \u2192 '+nC);t.category=nC}
+  if(nP!==t.priority){addLog(id,currentUser.name,'Priority: '+t.priority+' \u2192 '+nP);t.priority=nP}
+  if(nM!==t.mobilized){addLog(id,currentUser.name,(t.mobilized?'Mob':'Immob')+' \u2192 '+(nM?'Mob':'Immob'));t.mobilized=nM}
+  if(nV!==t.vin){addLog(id,currentUser.name,'VIN changed');t.vin=nV}
+  saveState();closeModal();openDetail(id);renderApp()
+}
+
+function openLB2(tid,idx){const t=tickets.find(x=>x.id===tid);if(!t||!t.media[idx])return;const lb=document.getElementById('lb');const m=t.media[idx];lb.innerHTML=m.type?.startsWith('video')?`<video src="${m.data}" controls autoplay style="max-width:90%;max-height:90%;border-radius:10px"></video>`:`<img src="${m.data}">`;lb.classList.add('active')}
+function closeLB(){document.getElementById('lb').classList.remove('active');document.getElementById('lb').innerHTML=''}
+function toggleNotif(){notifOpen=!notifOpen;const p=document.getElementById('notifPanel');if(p)p.classList.toggle('active',notifOpen)}
+function markRead(){notifications.forEach(n=>{if(n.forUser===currentUser?.id)n.read=true});notifOpen=false;saveState();renderApp()}
+function openNT(tid,nid){const n=notifications.find(x=>x.id===nid);if(n)n.read=true;notifOpen=false;saveState();renderApp();setTimeout(()=>openDetail(tid),50)}
+function closeModal(){document.getElementById('mOverlay').classList.remove('active');uploadedFiles=[]}
+
+function openNewTicket(){
+  uploadedFiles=[];const isD=currentUser.type==='dealer';
+  document.getElementById('mOverlay').innerHTML=`<div class="modal"><div class="modal-hdr"><h3>${L('Neues Ticket','New Ticket')}</h3><button class="close-btn" onclick="closeModal()">\u2715</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>${L('Titel','Title')} *</label><input type="text" id="fTitle" placeholder="${L('Kurze Beschreibung','Short description')}"></div>
+      <div class="form-row"><div class="form-group"><label>${L('Kategorie','Category')} *</label><select id="fCat2" onchange="updSub();updDynFields();autoAssign()">${CATEGORIES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div class="form-group"><label>${L('Unterkategorie','Subcategory')} *</label><select id="fSub" onchange="updDynFields()"></select></div></div>
+      <div class="form-row"><div class="form-group"><label>${L('Priorit\u00E4t','Priority')}</label><select id="fPri2">${PRIORITIES.map(p=>`<option ${p==='Medium'?'selected':''}>${p}</option>`).join('')}</select></div>
+      <div class="form-group"><label>${L('Fahrzeugstatus','Vehicle Status')}</label><select id="fMob"><option value="true">${L('Mobilisiert','Mobilized')}</option><option value="false">${L('Immobilisiert','Immobilized')}</option></select></div></div>
+      <div class="form-row vehicle-row"><div class="form-group"><label>${L('Pannenfall Nr.','RSA Job No.')}</label><input type="text" inputmode="numeric" pattern="[0-9]*" id="fRsa" placeholder="z.B. 3323987"></div>
+      <div class="form-group"><label>VIN <span id="vinReq"></span></label><input type="text" id="fVin" placeholder="WF0XXXGCDX..." maxlength="17"></div></div>
+      <div class="form-row vehicle-row"><div class="form-group"><label>${L('Motorstunden','Engine Hours')} <span id="ehReq"></span></label><input type="number" id="fEngHrs" placeholder="z.B. 12500"></div>
+      <div class="form-group"><label>${L('Kilometerstand','Mileage')} (km) <span id="mlReq"></span></label><input type="number" id="fMileage" placeholder="z.B. 85000"></div></div>
+      <!-- DYNAMIC FIELDS AREA -->
+      <div id="dynFields"></div>
+      <div class="form-group"><label>${L('Beschreibung','Description')} *</label><textarea id="fDesc" rows="3" placeholder="Details..."></textarea></div>
+      ${!isD?`<div class="form-row"><div class="form-group"><label>Sub-Dealer</label><select id="fDealer" onchange="autoAssign()">${DEALERS.map((d,i)=>`<option value="${i}">${d.name} \u2014 ${d.city}</option>`).join('')}</select></div>
+      <div class="form-group"><label>${L('Zuweisen','Assign')}</label><select id="fAssign">${FTD_TEAM.map(m=>`<option value="${m.id}">${m.name}${onHoliday(m.id)?' \uD83C\uDFD6\uFE0F':''}</option>`).join('')}</select></div></div>`:''}
+      <div class="form-group"><label>${L('Anh\u00E4nge','Attachments')} (PDF, JPEG, MP4)</label>
+        <div class="file-drop" id="dropZ"><p>\uD83D\uDCCE ${L('Dateien ziehen oder tippen','Drag files or tap')}</p><input type="file" id="fInput" multiple accept=".pdf,.jpg,.jpeg,video/mp4" style="display:none"></div>
+        <div class="file-previews" id="fPrevs"></div></div>
+    </div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">${L('Abbrechen','Cancel')}</button><button class="btn btn-primary" onclick="saveNew()">${L('Erstellen','Create')}</button></div></div>`;
+  document.getElementById('mOverlay').classList.add('active');
+  setupFU();updSub();updDynFields();autoAssign();
+}
+function autoAssign(){const ds=document.getElementById('fDealer');const as=document.getElementById('fAssign');const cs=document.getElementById('fCat2');if(!ds||!as||!cs)return;const d=DEALERS[parseInt(ds.value)];if(!d)return;as.value=getAssignee(d.name,cs.value)}
+function updSub(){const c=document.getElementById('fCat2')?.value;const s=document.getElementById('fSub');if(!c||!s)return;s.innerHTML=(subcategories[c]||[]).map(x=>`<option>${x}</option>`).join('')}
+function updDynFields(){
+  const cat=document.getElementById('fCat2')?.value||'';
+  const sub=document.getElementById('fSub')?.value||'';
+  const dyn=document.getElementById('dynFields');
+  const vinReq=document.getElementById('vinReq');
+  const ehReq=document.getElementById('ehReq');
+  const mlReq=document.getElementById('mlReq');
+  if(!dyn)return;
+  let html='';
+  // Show/hide vehicle fields based on category
+  const vRows=document.querySelectorAll('.vehicle-row');
+  vRows.forEach(r=>r.style.display=cat==='Sonstiges Ticket'?'none':'grid');
+  // Technisches Ticket: VIN, KM, Engine Hours mandatory + new fields
+  if(cat==='Technisches Ticket'){
+    if(vinReq)vinReq.innerHTML='<span style="color:var(--danger)">*</span>';
+    if(ehReq)ehReq.innerHTML='<span style="color:var(--danger)">*</span>';
+    if(mlReq)mlReq.innerHTML='<span style="color:var(--danger)">*</span>';
+    html=`<div style="border:1px solid var(--ford-orange);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px;background:var(--bg)">
+      <div style="font-size:11px;font-weight:700;color:var(--ford-orange);margin-bottom:8px">${L('Technische Pflichtangaben','Technical Required Fields')}</div>
+      <div class="form-group"><label>${L('Datum Problem erstmalig aufgetreten','Date problem first occurred')} * </label><input type="date" id="fProbDate"></div>
+      <div class="form-group"><label>${L('Schritte bis jetzt gepr\u00FCft','Steps checked so far')} *</label><textarea id="fStepsChecked" rows="3" placeholder="${L('Welche Diagnosen/Pr\u00FCfungen wurden bereits durchgef\u00FChrt?','What diagnostics/checks have already been performed?')}"></textarea></div>
+    </div>`;
+  } else {
+    if(vinReq)vinReq.innerHTML='';
+    if(ehReq)ehReq.innerHTML='';
+    if(mlReq)mlReq.innerHTML='';
+  }
+  // Ersatzteil Ticket: conditional per subcategory
+  if(cat==='Ersatzteil Ticket'){
+    if(sub==='Ersatzteil Ermittlung'){
+      if(vinReq)vinReq.innerHTML='<span style="color:var(--danger)">*</span>';
+    }
+    if(sub==='Ersatzteil Ersetzung'){
+      html=`<div style="border:1px solid var(--ford-orange);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px;background:var(--bg)">
+        <div class="form-group"><label>${L('Ersatzteilnummer','Part Number')} *</label><input type="text" id="fPartNo" placeholder="${L('z.B. FT-TXC-9920','e.g. FT-TXC-9920')}"></div>
+      </div>`;
+    }
+  }
+  // Sonstiges Ticket: user management fields
+  if(cat==='Sonstiges Ticket'){
+    const systems=`<div style="margin-top:6px;display:flex;flex-wrap:nowrap;gap:12px;align-items:center">
+      <label style="font-size:11px;display:flex;align-items:center;gap:3px;white-space:nowrap"><input type="checkbox" class="fSys fSysSingle" value="Partnerportal" onchange="syncAlleCheck()"> Partnerportal</label>
+      <label style="font-size:11px;display:flex;align-items:center;gap:3px;white-space:nowrap"><input type="checkbox" class="fSys fSysSingle" value="Ersatzteilermittlung" onchange="syncAlleCheck()"> Ersatzteilerm.</label>
+      <label style="font-size:11px;display:flex;align-items:center;gap:3px;white-space:nowrap"><input type="checkbox" class="fSys fSysSingle" value="Warranty" onchange="syncAlleCheck()"> Warranty</label>
+      <label style="font-size:11px;display:flex;align-items:center;gap:3px;white-space:nowrap"><input type="checkbox" class="fSys fSysSingle" value="FODIT" onchange="syncAlleCheck()"> FODIT</label>
+      <label style="font-size:11px;display:flex;align-items:center;gap:3px;white-space:nowrap;font-weight:700"><input type="checkbox" class="fSys" id="fSysAlle" value="Alle" onchange="if(this.checked){document.querySelectorAll('.fSysSingle').forEach(c=>c.checked=true)}else{document.querySelectorAll('.fSysSingle').forEach(c=>c.checked=false)}"> ${L('Alle','All')}</label>
+    </div>`;
+    if(sub==='Benutzer Anlegen'){
+      html=`<div style="border:1px solid var(--ford-orange);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px;background:var(--bg)">
+        <div style="font-size:11px;font-weight:700;color:var(--ford-orange);margin-bottom:8px">${L('Neuer Benutzer','New User')} \u2014 ${L('Pflichtangaben','Required Fields')}</div>
+        <div class="form-row"><div class="form-group"><label>${L('Vorname','First Name')} *</label><input type="text" id="fNewFirst" placeholder="Vorname"></div>
+        <div class="form-group"><label>${L('Nachname','Last Name')} *</label><input type="text" id="fNewLast" placeholder="Nachname"></div></div>
+        <div class="form-row"><div class="form-group"><label>E-Mail *</label><input type="email" id="fNewEmail" placeholder="name@firma.de"></div>
+        <div class="form-group"><label>${L('Funktion','Function/Role')} *</label><input type="text" id="fNewFunc" placeholder="${L('z.B. Werkstattleiter','e.g. Workshop Manager')}"></div></div>
+        <div class="form-group"><label>${L('Systeme / Zug\u00E4nge','Systems / Access')} *</label>${systems}</div>
+      </div>`;
+    } else if(sub==='Benutzer L\u00F6schen'){
+      html=`<div style="border:1px solid var(--ford-orange);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px;background:var(--bg)">
+        <div style="font-size:11px;font-weight:700;color:var(--ford-orange);margin-bottom:8px">${L('Benutzer L\u00F6schen','Delete User')} \u2014 ${L('Pflichtangaben','Required Fields')}</div>
+        <div class="form-group"><label>${L('Benutzername','Username')} *</label><input type="text" id="fDelUser" placeholder="username"></div>
+        <div class="form-group"><label>${L('Systeme / Zug\u00E4nge entfernen','Systems / Remove Access')}</label>${systems}</div>
+      </div>`;
+    } else if(sub==='Benutzer Zugangsprobleme / Passwort'){
+      html=`<div style="border:1px solid var(--ford-orange);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px;background:var(--bg)">
+        <div style="font-size:11px;font-weight:700;color:var(--ford-orange);margin-bottom:8px">${L('Zugangsprobleme','Access Problems')} \u2014 ${L('Pflichtangaben','Required Fields')}</div>
+        <div class="form-group"><label>${L('Benutzername','Username')} *</label><input type="text" id="fAccUser" placeholder="username"></div>
+      </div>`;
+    }
+  }
+  dyn.innerHTML=html;
+}
+function syncAlleCheck(){const singles=document.querySelectorAll('.fSysSingle');const alle=document.getElementById('fSysAlle');if(!alle)return;const allChecked=[...singles].every(c=>c.checked);alle.checked=allChecked}
+function setupFU(){const dz=document.getElementById('dropZ');const fi=document.getElementById('fInput');if(!dz||!fi)return;dz.onclick=()=>fi.click();dz.ondragover=e=>{e.preventDefault();dz.classList.add('dragover')};dz.ondragleave=()=>dz.classList.remove('dragover');dz.ondrop=e=>{e.preventDefault();dz.classList.remove('dragover');handleF(e.dataTransfer.files)};fi.onchange=()=>handleF(fi.files)}
+function handleF(fl){const ok=['image/jpeg','application/pdf','video/mp4'];Array.from(fl).forEach(f=>{if(!ok.includes(f.type))return;const r=new FileReader();r.onload=e=>{uploadedFiles.push({name:f.name,type:f.type,data:e.target.result});renderFP()};r.readAsDataURL(f)})}
+function renderFP(){const c=document.getElementById('fPrevs');if(!c)return;c.innerHTML=uploadedFiles.map((f,i)=>{if(f.type==='application/pdf')return`<div class="file-preview">PDF<button class="rm" onclick="rmF(${i})">\u2715</button></div>`;if(f.type?.startsWith('video'))return`<div class="file-preview">\u25B6MP4<button class="rm" onclick="rmF(${i})">\u2715</button></div>`;return`<div class="file-preview"><img src="${f.data}"><button class="rm" onclick="rmF(${i})">\u2715</button></div>`}).join('')}
+function rmF(i){uploadedFiles.splice(i,1);renderFP()}
+
+function saveNew(){
+  const title=document.getElementById('fTitle').value.trim();const desc=document.getElementById('fDesc').value.trim();
+  if(!title||!desc){alert(L('Titel und Beschreibung erforderlich','Title and description required'));return}
+  const cat=document.getElementById('fCat2').value;const sub=document.getElementById('fSub').value;
+  const pri=document.getElementById('fPri2').value;const mob=document.getElementById('fMob').value==='true';
+  const vin=document.getElementById('fVin')?.value.trim()||'';
+  const rsa=document.getElementById('fRsa')?.value.trim()||'';
+  const eh=document.getElementById('fEngHrs')?.value.trim()||'';
+  const ml=document.getElementById('fMileage')?.value.trim()||'';
+  
+  // Extra fields object
+  const extra={};
+  
+  // Technisches Ticket validation
+  if(cat==='Technisches Ticket'){
+    if(!vin){alert(L('VIN ist Pflichtangabe','VIN is required'));return}
+    if(!eh){alert(L('Motorstunden ist Pflichtangabe','Engine hours is required'));return}
+    if(!ml){alert(L('Kilometerstand ist Pflichtangabe','Mileage is required'));return}
+    extra.probDate=document.getElementById('fProbDate')?.value||'';
+    extra.stepsChecked=document.getElementById('fStepsChecked')?.value.trim()||'';
+    if(!extra.probDate){alert(L('Datum Problem erstmalig aufgetreten ist Pflichtangabe','Date problem first occurred is required'));return}
+    if(!extra.stepsChecked){alert(L('Schritte bis jetzt gepr\u00FCft ist Pflichtangabe','Steps checked so far is required'));return}
+  }
+  
+  // Ersatzteil Ticket validation
+  if(cat==='Ersatzteil Ticket'){
+    if(sub==='Ersatzteil Ermittlung'&&!vin){alert(L('VIN ist Pflichtangabe f\u00FCr Ersatzteil Ermittlung','VIN is required for part identification'));return}
+    if(sub==='Ersatzteil Ersetzung'){
+      extra.partNo=document.getElementById('fPartNo')?.value.trim()||'';
+      if(!extra.partNo){alert(L('Ersatzteilnummer ist Pflichtangabe','Part number is required'));return}
+    }
+  }
+  
+  // Sonstiges Ticket validation
+  if(cat==='Sonstiges Ticket'){
+    if(sub==='Benutzer Anlegen'){
+      extra.newFirst=document.getElementById('fNewFirst')?.value.trim()||'';
+      extra.newLast=document.getElementById('fNewLast')?.value.trim()||'';
+      extra.newEmail=document.getElementById('fNewEmail')?.value.trim()||'';
+      extra.newFunc=document.getElementById('fNewFunc')?.value.trim()||'';
+      extra.systems=[...document.querySelectorAll('.fSys:checked')].map(c=>c.value).filter(v=>v!=='Alle');
+      if(!extra.newFirst||!extra.newLast||!extra.newEmail||!extra.newFunc){alert(L('Vorname, Nachname, E-Mail und Funktion sind Pflichtangaben','First name, last name, email and function are required'));return}
+      if(!extra.systems.length){alert(L('Bitte mindestens ein System ausw\u00E4hlen','Please select at least one system'));return}
+    }
+    if(sub==='Benutzer L\u00F6schen'){
+      extra.delUsername=document.getElementById('fDelUser')?.value.trim()||'';
+      extra.systems=[...document.querySelectorAll('.fSys:checked')].map(c=>c.value).filter(v=>v!=='Alle');
+      if(!extra.delUsername){alert(L('Benutzername ist Pflichtangabe','Username is required'));return}
+    }
+    if(sub==='Benutzer Zugangsprobleme / Passwort'){
+      extra.accUsername=document.getElementById('fAccUser')?.value.trim()||'';
+      if(!extra.accUsername){alert(L('Benutzername ist Pflichtangabe','Username is required'));return}
+    }
+  }
+  
+  let dn,dc,at;
+  if(currentUser.type==='dealer'){dn=currentUser.dealerName;dc=currentUser.dealerCity;at=getAssignee(dn,cat)}
+  else{const di=parseInt(document.getElementById('fDealer').value);const d=DEALERS[di];dn=d.name;dc=d.city;at=document.getElementById('fAssign').value}
+  const t={id:nextTid++,ticketNo:'FTD-'+String(nextTid-1).padStart(4,'0'),title,description:desc,category:cat,subcat:sub,priority:pri,status:'Open',dealerName:dn,dealerCity:dc,assignedTo:at,mobilized:mob,vin,rsaJobNo:rsa,engineHours:eh,mileage:ml,extra,media:[...uploadedFiles],comments:[],auditLog:[{who:currentUser.name,when:new Date().toISOString(),what:'Ticket created'}],created:new Date().toISOString(),updated:new Date().toISOString(),closingDesc:'',closeReason:''};
+  tickets.unshift(t);addNotif(at,'New: '+t.ticketNo+' from '+dn,t.id);saveState();closeModal();renderApp();
+}
+
+// SETTINGS
+function renderSettings(mc){
+  if(!isFtd()){mc.innerHTML='<div class="empty-state"><h3>'+L('Kein Zugriff','No access')+'</h3></div>';return}
+  mc.innerHTML=`<div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+    <button class="btn ${settingsTab==='subcats'?'btn-ford':'btn-secondary'}" onclick="settingsTab='subcats';renderContent()">${L('Unterkategorien','Subcategories')}</button>
+    <button class="btn ${settingsTab==='holidays'?'btn-ford':'btn-secondary'}" onclick="settingsTab='holidays';renderContent()">${L('Abwesenheit','Out of Office')}</button>
+    <button class="btn ${settingsTab==='users'?'btn-ford':'btn-secondary'}" onclick="settingsTab='users';renderContent()">${L('Benutzerrechte','User Rights')}</button>
+    <button class="btn ${settingsTab==='lang'?'btn-ford':'btn-secondary'}" onclick="settingsTab='lang';renderContent()">\uD83C\uDF10 ${L('Sprache','Language')}</button></div><div id="sContent"></div>`;
+  const sc=document.getElementById('sContent');
+  if(settingsTab==='subcats')renderSubcats(sc);else if(settingsTab==='holidays')renderHols(sc);else if(settingsTab==='lang')renderLang(sc);else renderUsers(sc);
+}
+
+function renderSubcats(sc){
+  sc.innerHTML=CATEGORIES.map(cat=>{const subs=subcategories[cat]||[];return`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><strong style="color:var(--ford-orange)">${cat}</strong><button class="btn btn-sm btn-primary" onclick="addSub('${cat}')">+ ${L('Hinzuf\u00FCgen','Add')}</button></div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">${subs.map((s,i)=>`<span class="tag tag-cat" style="font-size:12px;padding:4px 10px">${s} <span style="cursor:pointer;margin-left:4px" onclick="rmSub('${cat}',${i})">\u2715</span></span>`).join('')}</div></div>`}).join('');
+}
+function addSub(cat){document.getElementById('mOverlay').innerHTML=`<div class="modal"><div class="modal-hdr"><h3>${L('Unterkategorie','Subcategory')}</h3><button class="close-btn" onclick="closeModal()">\u2715</button></div>
+    <div class="modal-body"><div class="form-group"><label>${L('Kategorie','Category')}</label><input type="text" value="${cat}" disabled style="opacity:0.7"></div><div class="form-group"><label>${L('Neue Unterkategorie','New Subcategory')} *</label><input type="text" id="newSubName"></div></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">${L('Abbrechen','Cancel')}</button><button class="btn btn-primary" onclick="doAddSub('${cat}')">${L('Hinzuf\u00FCgen','Add')}</button></div></div>`;document.getElementById('mOverlay').classList.add('active')}
+function doAddSub(cat){const n=document.getElementById('newSubName').value.trim();if(!n)return;subcategories[cat]=subcategories[cat]||[];subcategories[cat].push(n);saveState();closeModal();renderContent()}
+function rmSub(cat,i){subcategories[cat].splice(i,1);saveState();renderContent()}
+
+function renderHols(sc){
+  sc.innerHTML=`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><strong>${L('Abwesenheit','Out of Office')}</strong><button class="btn btn-sm btn-primary" onclick="addHol()">+ ${L('Abwesenheit','OoO')}</button></div>
+    <table class="settings-table"><thead><tr><th>Name</th><th>${L('Von','From')}</th><th>${L('Bis','To')}</th><th>Status</th><th></th></tr></thead><tbody>
+    ${holidays.length?holidays.map((h,i)=>{const now=new Date();const act=new Date(h.from)<=now&&new Date(h.to)>=now;return`<tr><td>${getFtdName(h.fid)}</td><td>${fmtDate(h.from)}</td><td>${fmtDate(h.to)}</td><td><span class="tag ${act?'tag-immob':'tag-mob'}">${act?L('Abwesend','OoO'):L('Geplant','Planned')}</span></td><td><button class="btn btn-sm btn-danger" onclick="rmHol(${i})">\u2715</button></td></tr>`}).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--text-mut);padding:20px">Keine</td></tr>'}
+    </tbody></table></div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px"><strong>${L('Aktueller Status','Current Status')}</strong>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">${FTD_TEAM.map(m=>`<span class="tag ${onHoliday(m.id)?'tag-immob':'tag-mob'}" style="font-size:12px;padding:4px 10px">${m.name} ${onHoliday(m.id)?'\uD83C\uDFD6\uFE0F':'\u2705'}</span>`).join('')}</div></div>`;
+}
+function addHol(){document.getElementById('mOverlay').innerHTML=`<div class="modal"><div class="modal-hdr"><h3>${L('Abwesenheit eintragen','Set Out of Office')}</h3><button class="close-btn" onclick="closeModal()">\u2715</button></div>
+    <div class="modal-body"><div class="form-group"><label>${L('Mitarbeiter','Staff Member')} *</label><select id="holPerson" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text);font-size:13px;font-family:var(--font)">${FTD_TEAM.map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}</select></div>
+    <div class="form-row"><div class="form-group"><label>${L('Von','From')} *</label><input type="date" id="holFrom"></div><div class="form-group"><label>${L('Bis','To')} *</label><input type="date" id="holTo"></div></div></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">${L('Abbrechen','Cancel')}</button><button class="btn btn-primary" onclick="doAddHol()">${L('Eintragen','Save')}</button></div></div>`;document.getElementById('mOverlay').classList.add('active')}
+function doAddHol(){const fid=document.getElementById('holPerson').value;const from=document.getElementById('holFrom').value;const to=document.getElementById('holTo').value;if(!from||!to)return;holidays.push({fid,from:from+'T00:00:00',to:to+'T23:59:59'});saveState();closeModal();renderContent()}
+function rmHol(i){holidays.splice(i,1);saveState();renderContent()}
+
+function renderUsers(sc){
+  const ftdUsers=userRights.filter(u=>u.type==='ftd');
+  sc.innerHTML=`
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px">
+      <strong style="display:block;margin-bottom:10px">${L('Berechtigungsmatrix','Permission Matrix')}</strong>
+      <table class="settings-table"><thead><tr><th>${L('Berechtigung','Permission')}</th><th>Admin</th><th>Standard</th><th>Dealer</th></tr></thead><tbody>
+        <tr><td>${L('Tickets erstellen','Create tickets')}</td><td>\u2705</td><td>\u2705</td><td>\u2705</td></tr>
+        <tr><td>${L('Alle Tickets sehen','View all tickets')}</td><td>\u2705</td><td>\u2705</td><td>\u274C</td></tr>
+        <tr><td>${L('Tickets bearbeiten','Edit tickets')}</td><td>\u2705</td><td>\u2705</td><td>\u274C</td></tr>
+        <tr><td>${L('Tickets schlie\u00DFen','Close tickets')}</td><td>\u2705</td><td>\u2705</td><td>\u274C</td></tr>
+        <tr><td>${L('Wieder\u00F6ffnen','Reopen')}</td><td>\u2705</td><td>\u274C</td><td>\u274C</td></tr>
+        <tr><td>${L('Tickets l\u00F6schen','Delete tickets')}</td><td>\u2705</td><td>\u274C</td><td>\u274C</td></tr>
+        <tr><td>${L('Analyse','Analytics')}</td><td>\u2705</td><td>\u2705</td><td>\u274C</td></tr>
+      </tbody></table></div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <strong>F-Trucks Deutschland ${L('Mitarbeiter','Staff')} (${ftdUsers.length})</strong>
+        <button class="btn btn-sm btn-primary" onclick="showAddFtdModal()">+ ${L('Mitarbeiter','Staff')}</button></div>
+      <table class="settings-table"><thead><tr><th>Name</th><th>E-Mail</th><th>${L('Rolle','Role')}</th><th>${L('Rechte','Rights')}</th><th>Status</th><th>${L('Aktionen','Actions')}</th></tr></thead><tbody>
+      ${ftdUsers.map(u=>{const idx=userRights.indexOf(u);const hol=onHoliday(u.userId);return`<tr><td><strong>${u.name}</strong></td><td style="font-size:10px;color:var(--text-sec)">${u.email||'\u2014'}</td><td>${u.role}</td><td>${u.canAdmin?'<span class="tag tag-critical">Admin</span>':'<span class="tag tag-medium">Standard</span>'}</td><td>${hol?'<span class="tag tag-immob">\uD83C\uDFD6\uFE0F '+L('Abwesend','OoO')+'</span>':'<span class="tag tag-mob">\u2705 '+L('Verf\u00FCgbar','Available')+'</span>'}</td><td><button class="btn btn-sm btn-secondary" onclick="showEditFtdModal(${idx})">\u270F\uFE0F</button> <button class="btn btn-sm btn-danger" onclick="rmUR(${idx})">\u2715</button></td></tr>`}).join('')}
+      </tbody></table></div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+      <strong>${L('Dealer & Kontaktpersonen','Dealer & Contacts')}</strong>
+      <div class="form-group" style="margin-top:10px"><label>${L('Dealer ausw\u00E4hlen','Select Dealer')}</label>
+        <select id="dealerMgmtSelect" onchange="showDealerPersons()" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text);font-size:13px;font-family:var(--font)">
+          <option value="">\u2014 ${L('Bitte w\u00E4hlen','Please select')} \u2014</option>
+          ${DEALERS.map((d,i)=>`<option value="${i}">${d.name} \u2014 ${d.city}</option>`).join('')}
+        </select></div>
+      <div id="dealerPersonsArea"></div></div>`;
+}
+
+function showDealerPersons(){const sel=document.getElementById('dealerMgmtSelect');const area=document.getElementById('dealerPersonsArea');if(!sel||!area)return;const idx=parseInt(sel.value);if(isNaN(idx)){area.innerHTML='';return}const d=DEALERS[idx];const persons=userRights.filter(u=>u.type==='dealer'&&u.dealerRef===d.name);
+  area.innerHTML=`<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-top:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div><strong style="color:var(--ford-orange)">${d.name}</strong><br><span style="font-size:11px;color:var(--text-sec)">${d.city}, ${d.state}</span></div><button class="btn btn-sm btn-primary" onclick="showAddDealerPersonModal(${idx})">+ Person</button></div>
+    <div style="font-size:11px;color:var(--text-mut);margin-bottom:8px">FTD: Claim: <strong>${d.claim}</strong> | Tech: <strong>${d.tech||'\u2014'}</strong> | Service: <strong>${d.service}</strong> | Parts: <strong>${d.parts}</strong></div>
+    ${persons.length?`<table class="settings-table"><thead><tr><th>Person</th><th>Position</th><th>E-Mail</th><th></th></tr></thead><tbody>${persons.map(p=>{const pi=userRights.indexOf(p);return`<tr><td>${p.name}</td><td>${p.role}</td><td style="font-size:11px">${p.email||'\u2014'}</td><td><button class="btn btn-sm btn-secondary" onclick="showEditDealerPersonModal(${pi})">\u270F\uFE0F</button> <button class="btn btn-sm btn-danger" onclick="rmUR(${pi})">\u2715</button></td></tr>`}).join('')}</tbody></table>`:'<div style="text-align:center;padding:16px;color:var(--text-mut);font-size:12px">No contacts configured</div>'}</div>`}
+
+function showAddFtdModal(){document.getElementById('mOverlay').innerHTML=`<div class="modal"><div class="modal-hdr"><h3>${L('Mitarbeiter hinzuf\u00FCgen','Add Staff')}</h3><button class="close-btn" onclick="closeModal()">\u2715</button></div>
+    <div class="modal-body"><div class="form-group"><label>Name *</label><input type="text" id="urName" placeholder="Vorname Nachname"></div><div class="form-group"><label>E-Mail *</label><input type="email" id="urEmail" placeholder="vorname.nachname@ford-trucks.de"></div><div class="form-group"><label>${L('Rolle','Role')} *</label><input type="text" id="urRole"></div><div class="form-group"><label>${L('Rechte','Rights')}</label><select id="urAdmin"><option value="false">Standard</option><option value="true">Admin</option></select></div></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">${L('Abbrechen','Cancel')}</button><button class="btn btn-primary" onclick="doAddFtd()">${L('Hinzuf\u00FCgen','Add')}</button></div></div>`;document.getElementById('mOverlay').classList.add('active')}
+function doAddFtd(){const n=document.getElementById('urName').value.trim();const r=document.getElementById('urRole').value.trim();const e=document.getElementById('urEmail').value.trim();if(!n||!r)return;userRights.push({userId:n.toLowerCase().replace(/[^a-z]/g,'')+'_'+Date.now(),type:'ftd',name:n,role:r,email:e,canAdmin:document.getElementById('urAdmin').value==='true'});saveState();closeModal();renderContent()}
+function showEditFtdModal(idx){const u=userRights[idx];if(!u)return;document.getElementById('mOverlay').innerHTML=`<div class="modal"><div class="modal-hdr"><h3>${L('Bearbeiten','Edit')}</h3><button class="close-btn" onclick="closeModal()">\u2715</button></div>
+    <div class="modal-body"><div class="form-group"><label>Name</label><input type="text" id="urName" value="${u.name}"></div><div class="form-group"><label>E-Mail</label><input type="email" id="urEmail" value="${u.email||''}"></div><div class="form-group"><label>${L('Rolle','Role')}</label><input type="text" id="urRole" value="${u.role}"></div><div class="form-group"><label>${L('Rechte','Rights')}</label><select id="urAdmin"><option value="false" ${!u.canAdmin?'selected':''}>Standard</option><option value="true" ${u.canAdmin?'selected':''}>Admin</option></select></div></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">${L('Abbrechen','Cancel')}</button><button class="btn btn-primary" onclick="doEditFtd(${idx})">${L('Speichern','Save')}</button></div></div>`;document.getElementById('mOverlay').classList.add('active')}
+function doEditFtd(idx){const u=userRights[idx];if(!u)return;u.name=document.getElementById('urName').value.trim();u.email=document.getElementById('urEmail').value.trim();u.role=document.getElementById('urRole').value.trim();u.canAdmin=document.getElementById('urAdmin').value==='true';saveState();closeModal();renderContent()}
+function showAddDealerPersonModal(di){const d=DEALERS[di];document.getElementById('mOverlay').innerHTML=`<div class="modal"><div class="modal-hdr"><h3>+ Person \u2014 ${d.name}</h3><button class="close-btn" onclick="closeModal()">\u2715</button></div>
+    <div class="modal-body"><div class="form-group"><label>Name *</label><input type="text" id="dpName"></div><div class="form-group"><label>Position *</label><input type="text" id="dpRole"></div><div class="form-group"><label>E-Mail</label><input type="email" id="dpEmail"></div></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">${L('Abbrechen','Cancel')}</button><button class="btn btn-primary" onclick="doAddDP(${di})">${L('Hinzuf\u00FCgen','Add')}</button></div></div>`;document.getElementById('mOverlay').classList.add('active')}
+function doAddDP(di){const d=DEALERS[di];const n=document.getElementById('dpName').value.trim();const r=document.getElementById('dpRole').value.trim();if(!n||!r)return;userRights.push({userId:'dp_'+Date.now(),type:'dealer',dealerRef:d.name,name:n,role:r,email:document.getElementById('dpEmail').value.trim(),canAdmin:false});saveState();closeModal();renderContent();showDealerPersons()}
+function showEditDealerPersonModal(idx){const u=userRights[idx];if(!u)return;document.getElementById('mOverlay').innerHTML=`<div class="modal"><div class="modal-hdr"><h3>${L('Person bearbeiten','Edit Person')}</h3><button class="close-btn" onclick="closeModal()">\u2715</button></div>
+    <div class="modal-body"><div class="form-group"><label>Name</label><input type="text" id="dpName" value="${u.name}"></div><div class="form-group"><label>Position</label><input type="text" id="dpRole" value="${u.role}"></div><div class="form-group"><label>E-Mail</label><input type="email" id="dpEmail" value="${u.email||''}"></div></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">${L('Abbrechen','Cancel')}</button><button class="btn btn-primary" onclick="doEditDP(${idx})">${L('Speichern','Save')}</button></div></div>`;document.getElementById('mOverlay').classList.add('active')}
+function doEditDP(idx){const u=userRights[idx];if(!u)return;u.name=document.getElementById('dpName').value.trim();u.role=document.getElementById('dpRole').value.trim();u.email=document.getElementById('dpEmail').value.trim();saveState();closeModal();renderContent();showDealerPersons()}
+function rmUR(idx){userRights.splice(idx,1);saveState();renderContent()}
+
+function renderLang(sc){
+  sc.innerHTML=`
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px">
+      <strong style="display:block;margin-bottom:12px">\uD83C\uDF10 ${L('Spracheinstellung','Language Setting')}</strong>
+      <p style="font-size:12px;color:var(--text-sec);margin-bottom:14px">Controls display language for all UI labels and dropdowns. Free text can be translated using the DeepL button on each ticket.</p>
+      <div style="display:flex;gap:10px;margin-bottom:16px">
+        <button class="btn ${langMode==='de'?'btn-ford':'btn-secondary'}" onclick="setLang('de')" style="flex:1;padding:14px;font-size:14px">\uD83C\uDE00 Deutsch (DE)<br><span style="font-size:11px;opacity:0.8">Nur Deutsch</span></button>
+        <button class="btn ${langMode==='de_en'?'btn-ford':'btn-secondary'}" onclick="setLang('de_en')" style="flex:1;padding:14px;font-size:14px">\uD83C\uDE00 + \uD83C\uDDEC\uD83C\uDDE7 DE / EN<br><span style="font-size:11px;opacity:0.8">Bilingual</span></button>
+      </div>
+      <div style="font-size:11px;color:var(--text-mut)">Current: <strong>${langMode==='de'?'Deutsch only':'Deutsch + English'}</strong></div></div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+      <strong style="display:block;margin-bottom:10px">\uD83D\uDD04 DeepL Translation</strong>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="background:#0F2B46;color:#fff;font-size:10px;padding:3px 8px;border-radius:4px;font-weight:700">DeepL</span><span style="font-size:12px;color:var(--text-sec)">Ready for Production</span></div>
+      <p style="font-size:12px;color:var(--text-sec)">In production, the translate button on each ticket will use F-Trucks Deutschland's DeepL subscription to translate free text fields between DE and EN.</p></div>`;
+}
+function setLang(mode){langMode=mode;saveState();renderApp()}
+
+// ANALYTICS
+function setAnalyticsDealer(v){analyticsDealer=v;renderContent()}
+function renderAnalytics(mc){
+  if(!isFtd()){mc.innerHTML='<div class="empty-state"><h3>'+L('Kein Zugriff','No access')+'</h3></div>';return}
+  
+  // Build dealer list with ticket counts for sidebar
+  const allTickets=tickets;
+  const dealerTicketCounts={};
+  allTickets.forEach(t=>{dealerTicketCounts[t.dealerName]=(dealerTicketCounts[t.dealerName]||0)+1});
+  const activeDealerNames=[...new Set(allTickets.map(t=>t.dealerName))].sort();
+  
+  // Filter by selected dealer
+  const all=analyticsDealer?allTickets.filter(t=>t.dealerName===analyticsDealer):allTickets;
+  const filterLabel=analyticsDealer||L('Alle Dealer','All Dealers');
+  const open=all.filter(t=>t.status==='Open');
+  const prog=all.filter(t=>t.status==='In Progress');
+  const res=all.filter(t=>t.status==='Resolved');
+  const closed=all.filter(t=>t.status==='Closed');
+  const active=[...open,...prog];
+  const immob=active.filter(t=>!t.mobilized);
+  const crit=active.filter(t=>t.priority==='Critical');
+  const now=Date.now();
+
+  const dealerCounts={};
+  all.forEach(t=>{dealerCounts[t.dealerName]=(dealerCounts[t.dealerName]||0)+1});
+  const topDealers=Object.entries(dealerCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+
+  const catCounts={};
+  CATEGORIES.forEach(c=>{catCounts[c]=all.filter(t=>t.category===c).length});
+
+  const priCounts={};
+  PRIORITIES.forEach(p=>{priCounts[p]=active.filter(t=>t.priority===p).length});
+
+  const assignCounts={};
+  active.forEach(t=>{const n=getFtdName(t.assignedTo);assignCounts[n]=(assignCounts[n]||0)+1});
+  const assignList=Object.entries(assignCounts).sort((a,b)=>b[1]-a[1]);
+
+  const resolvedAll=[...res,...closed].filter(t=>t.created&&t.updated);
+  let avgResTime='\u2014';
+  if(resolvedAll.length){const totalDays=resolvedAll.reduce((sum,t)=>sum+(new Date(t.updated)-new Date(t.created))/86400000,0);avgResTime=(totalDays/resolvedAll.length).toFixed(1)}
+
+  const resRate=all.length?((res.length+closed.length)/all.length*100).toFixed(0):'0';
+
+  const subCounts={};
+  active.forEach(t=>{if(t.subcat)subCounts[t.subcat]=(subCounts[t.subcat]||0)+1});
+  const topSubs=Object.entries(subCounts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+  const immobByDealer={};
+  immob.forEach(t=>{immobByDealer[t.dealerName]=(immobByDealer[t.dealerName]||0)+1});
+  const immobList=Object.entries(immobByDealer).sort((a,b)=>b[1]-a[1]);
+
+  // Aging Analysis
+  const ageBuckets={'0-2d':0,'3-5d':0,'6-10d':0,'10d+':0};
+  active.forEach(t=>{const days=(now-new Date(t.created).getTime())/86400000;if(days<=2)ageBuckets['0-2d']++;else if(days<=5)ageBuckets['3-5d']++;else if(days<=10)ageBuckets['6-10d']++;else ageBuckets['10d+']++});
+  const ageColors={'0-2d':'success','3-5d':'info','6-10d':'warning','10d+':'danger'};
+
+  // Abschlussgründe / Closing Reasons
+  const closeReasons={};
+  [...res,...closed].forEach(t=>{if(t.closeReason){closeReasons[t.closeReason]=(closeReasons[t.closeReason]||0)+1}});
+  const closeReasonList=Object.entries(closeReasons).sort((a,b)=>b[1]-a[1]);
+
+  // Response Time per Staff
+  const staffResponse={};
+  all.forEach(t=>{if(!t.assignedTo||!t.created)return;const name=getFtdName(t.assignedTo);const firstAction=(t.comments||[]).find(c=>c.author!=='System');const firstLog=(t.auditLog||[]).find((a,i)=>i>0&&a.who!=='System');let rt=null;if(firstAction)rt=(new Date(firstAction.time)-new Date(t.created))/3600000;else if(firstLog)rt=(new Date(firstLog.when)-new Date(t.created))/3600000;if(rt!==null&&rt>=0){if(!staffResponse[name])staffResponse[name]={total:0,count:0};staffResponse[name].total+=rt;staffResponse[name].count++}});
+  const staffResponseList=Object.entries(staffResponse).map(([name,d])=>[name,(d.total/d.count).toFixed(1)]).sort((a,b)=>a[1]-b[1]);
+
+  // Repeat Offenders
+  const dealerSubcatMap={};
+  all.forEach(t=>{const key=t.dealerName+'|||'+t.subcat;dealerSubcatMap[key]=(dealerSubcatMap[key]||0)+1});
+  const repeaters=Object.entries(dealerSubcatMap).filter(([k,v])=>v>=2).map(([k,v])=>{const[d,s]=k.split('|||');return{dealer:d,subcat:s,count:v}}).sort((a,b)=>b.count-a.count).slice(0,10);
+
+  // Ersatzteil Pipeline
+  const etSubs=['Ersatzteil Ermittlung','Ersatzteil Reklamation','Ersatzteil R\u00fccksendung','Ersatzteil Ersetzung','Sonstiges'];
+  const etPipeline={};etSubs.forEach(s=>{etPipeline[s]={open:0,prog:0,resolved:0}});
+  all.filter(t=>t.category==='Ersatzteil Ticket').forEach(t=>{const s=t.subcat||'Sonstiges';if(!etPipeline[s])etPipeline[s]={open:0,prog:0,resolved:0};if(t.status==='Open')etPipeline[s].open++;else if(t.status==='In Progress')etPipeline[s].prog++;else etPipeline[s].resolved++});
+
+  // VIN Fleet View
+  const vinMap={};
+  all.forEach(t=>{if(t.vin&&t.vin.length>5){if(!vinMap[t.vin])vinMap[t.vin]={count:0,tickets:[],dealer:t.dealerName};vinMap[t.vin].count++;vinMap[t.vin].tickets.push(t.ticketNo)}});
+  const multiVin=Object.entries(vinMap).filter(([v,d])=>d.count>=2).sort((a,b)=>b[1].count-a[1].count);
+
+  // Ticket Creation Trend (14 days)
+  const trend={};
+  for(let i=13;i>=0;i--){const d=new Date(now-i*86400000);const key=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});trend[key]=0}
+  all.forEach(t=>{const d=new Date(t.created);const key=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});if(trend[key]!==undefined)trend[key]++});
+  const trendEntries=Object.entries(trend);const trendMax=Math.max(...trendEntries.map(x=>x[1]),1);
+
+  // Dealers with Zero Activity
+  const activeDealers=new Set(all.map(t=>t.dealerName));
+  const zeroDealers=DEALERS.filter(d=>!activeDealers.has(d.name));
+
+  function bar(val,max,color){const pct=max?Math.round(val/max*100):0;return`<div style="background:var(--border);border-radius:3px;height:18px;flex:1;overflow:hidden"><div style="background:var(--${color});height:100%;width:${pct}%;border-radius:3px;transition:width 0.3s"></div></div>`}
+  function card(title,content){return`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px"><strong style="font-size:13px;display:block;margin-bottom:10px">${title}</strong>${content}</div>`}
+
+  mc.innerHTML=`
+  <div style="display:flex;gap:14px;align-items:flex-start">
+    <!-- LEFT SIDEBAR -->
+    <div style="width:220px;flex-shrink:0;position:sticky;top:66px">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+        <div style="padding:10px 12px;background:var(--ford-blue);color:#fff;font-size:12px;font-weight:700">\uD83C\uDFE2 ${L('Dealer Filter','Dealer Filter')}</div>
+        <div style="max-height:calc(100vh - 160px);overflow-y:auto">
+          <div onclick="setAnalyticsDealer('')" style="padding:8px 12px;font-size:11px;cursor:pointer;border-bottom:1px solid var(--border);font-weight:${!analyticsDealer?'700':'400'};color:${!analyticsDealer?'var(--ford-orange)':'var(--text)'};background:${!analyticsDealer?'var(--bg)':'transparent'}">\u25C9 ${L('Alle Dealer','All Dealers')} <span style="float:right;color:var(--text-mut);font-size:10px">${allTickets.length}</span></div>
+          ${activeDealerNames.map(dn=>{const cnt=dealerTicketCounts[dn]||0;const sel=analyticsDealer===dn;return`<div onclick="setAnalyticsDealer('${dn.replace(/'/g,"\\\\'")}')" style="padding:7px 12px;font-size:10px;cursor:pointer;border-bottom:1px solid var(--border);font-weight:${sel?'700':'400'};color:${sel?'var(--ford-orange)':'var(--text)'};background:${sel?'var(--bg)':'transparent'}" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='${sel?'var(--bg)':'transparent'}'"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${sel?'var(--ford-orange)':'var(--border)'};margin-right:6px"></span>${dn.length>28?dn.substring(0,28)+'...':dn} <span style="float:right;color:var(--text-mut);font-size:9px">${cnt}</span></div>`}).join('')}
+        </div>
+      </div>
+    </div>
+    <!-- RIGHT CONTENT -->
+    <div style="flex:1;min-width:0">
+    ${analyticsDealer?`<div style="margin-bottom:12px;padding:10px 14px;background:var(--ford-blue);color:#fff;border-radius:var(--radius);display:flex;justify-content:space-between;align-items:center"><div><strong style="font-size:14px">\uD83C\uDFE2 ${analyticsDealer}</strong><br><span style="font-size:11px;opacity:0.8">${all.length} ${L('Tickets','tickets')} | ${L('Gefilterte Ansicht','Filtered view')}</span></div><button onclick="setAnalyticsDealer('')" style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:11px;font-family:var(--font)">\u2715 ${L('Filter entfernen','Clear filter')}</button></div>`:''}
+    <div class="stats-row" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr))">
+      <div class="stat-card"><div class="stat-label">Gesamt / Total</div><div class="stat-value">${all.length}</div></div>
+      <div class="stat-card"><div class="stat-label">Offen / Open</div><div class="stat-value" style="color:var(--info)">${open.length}</div></div>
+      <div class="stat-card"><div class="stat-label">In Bearbeitung</div><div class="stat-value" style="color:var(--warning)">${prog.length}</div></div>
+      <div class="stat-card"><div class="stat-label">Erledigt / Resolved</div><div class="stat-value" style="color:var(--success)">${res.length+closed.length}</div></div>
+      <div class="stat-card"><div class="stat-label">Kritisch / Critical</div><div class="stat-value" style="color:var(--danger)">${crit.length}</div></div>
+      <div class="stat-card"><div class="stat-label">Immobilisiert</div><div class="stat-value" style="color:var(--danger)">${immob.length}</div></div>
+      <div class="stat-card"><div class="stat-label">\u00D8 Resolution (days)</div><div class="stat-value">${avgResTime}</div></div>
+      <div class="stat-card"><div class="stat-label">Lösungsrate / Resolution Rate</div><div class="stat-value" style="color:var(--success)">${resRate}%</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      ${card('Tickets nach Kategorie / Tickets by Category', CATEGORIES.map(c=>{const cnt=catCounts[c]||0;const mx=Math.max(...Object.values(catCounts));return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;width:120px;flex-shrink:0;color:var(--text-sec)">${c.split(' ')[0]}</span>${bar(cnt,mx,'ford-orange')}<strong style="font-size:12px;width:30px;text-align:right">${cnt}</strong></div>`}).join(''))}
+      ${card('Aktive nach Priorität / Active by Priority', PRIORITIES.map(p=>{const cnt=priCounts[p]||0;const mx=Math.max(...Object.values(priCounts),1);const col=p==='Critical'?'danger':p==='High'?'warning':p==='Medium'?'info':'success';return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;width:60px;flex-shrink:0;color:var(--text-sec)">${p}</span>${bar(cnt,mx,col)}<strong style="font-size:12px;width:30px;text-align:right">${cnt}</strong></div>`}).join(''))}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      ${card('\u23F1 Ticket-Alter (Offene Tickets) / Ticket Aging', Object.entries(ageBuckets).map(([label,cnt])=>{const mx=Math.max(...Object.values(ageBuckets),1);const col=ageColors[label];return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;width:50px;flex-shrink:0;color:var(--text-sec)">${label}</span>${bar(cnt,mx,col)}<strong style="font-size:12px;width:30px;text-align:right;color:var(--${col})">${cnt}</strong></div>`}).join('')+(ageBuckets['10d+']?'<div style="margin-top:8px;font-size:11px;color:var(--danger);font-weight:600">\u26A0 '+ageBuckets['10d+']+' Tickets offen seit über 10 Tagen</div>':''))}
+      ${card('\u2705 Abschlussgründe / Closing Reasons', closeReasonList.length?closeReasonList.map(([r,cnt])=>{const mx=closeReasonList[0][1];return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:10px;width:140px;flex-shrink:0;color:var(--text-sec)">${r.split(' / ')[0]}</span>${bar(cnt,mx,'success')}<strong style="font-size:12px;width:30px;text-align:right">${cnt}</strong></div>`}).join(''):'<div style="color:var(--text-mut);font-size:12px">Keine geschlossenen Tickets mit Gründen</div>')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      ${card('\uD83D\uDC64 Mitarbeiter-Auslastung / Staff Workload', assignList.length?assignList.map(([name,cnt])=>{const mx=Math.max(...assignList.map(x=>x[1]),1);return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;width:80px;flex-shrink:0;color:var(--text-sec)">${name}</span>${bar(cnt,mx,'info')}<strong style="font-size:12px;width:30px;text-align:right">${cnt}</strong></div>`}).join(''):'<div style="color:var(--text-mut);font-size:12px">Keine aktiven Tickets</div>')}
+      ${card('\u23F1 Ø Reaktionszeit / Avg Response Time (h)', staffResponseList.length?staffResponseList.map(([name,hrs])=>{const mx=Math.max(...staffResponseList.map(x=>parseFloat(x[1])),1);const col=parseFloat(hrs)<=4?'success':parseFloat(hrs)<=12?'warning':'danger';return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;width:80px;flex-shrink:0;color:var(--text-sec)">${name}</span>${bar(parseFloat(hrs),mx,col)}<strong style="font-size:12px;width:40px;text-align:right;color:var(--${col})">${hrs}h</strong></div>`}).join(''):'<div style="color:var(--text-mut);font-size:12px">Keine Reaktionszeitdaten vorhanden</div>')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      ${card('\uD83D\uDD27 Häufigste Probleme / Top Issue Types', topSubs.length?topSubs.map(([name,cnt])=>{const mx=topSubs[0][1];return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;width:120px;flex-shrink:0;color:var(--text-sec)">${name}</span>${bar(cnt,mx,'warning')}<strong style="font-size:12px;width:30px;text-align:right">${cnt}</strong></div>`}).join(''):'<div style="color:var(--text-mut);font-size:12px">Keine Daten</div>')}
+      ${card('\uD83D\uDD01 Wiederkehrende Probleme / Repeat Issues', repeaters.length?`<table class="settings-table"><thead><tr><th style="font-size:10px">Dealer</th><th style="font-size:10px">Issue Type</th><th style="font-size:10px">#</th></tr></thead><tbody>${repeaters.map(r=>`<tr><td style="font-size:10px">${r.dealer.substring(0,28)}</td><td style="font-size:10px"><span class="tag tag-cat" style="font-size:9px;padding:2px 6px">${r.subcat}</span></td><td><strong style="color:var(--danger)">${r.count}x</strong></td></tr>`).join('')}</tbody></table>`:'<div style="color:var(--text-mut);font-size:12px">Keine Muster erkannt</div>')}
+    </div>
+
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px">
+      <strong style="font-size:13px;display:block;margin-bottom:10px">\uD83D\uDCC8 Ticket-Volumen-Trend / Volume Trend (14 Tage)</strong>
+      <div style="display:flex;align-items:flex-end;gap:4px;height:160px;padding-top:8px">
+        ${trendEntries.map(([date,cnt])=>{const h=trendMax?Math.round(cnt/trendMax*120):0;return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:9px;color:var(--text-sec)">${cnt||''}</span><div style="width:100%;height:${h}px;background:var(--ford-orange);border-radius:3px 3px 0 0;min-height:${cnt?4:1}px;opacity:${cnt?1:0.2}"></div><span style="font-size:8px;color:var(--text-mut);writing-mode:vertical-lr;transform:rotate(180deg);height:35px">${date}</span></div>`}).join('')}
+      </div>
+    </div>
+
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px">
+      <strong style="font-size:13px;display:block;margin-bottom:10px">\uD83D\uDCE6 Ersatzteil Pipeline / Spare Parts Pipeline</strong>
+      <table class="settings-table"><thead><tr><th>Stage</th><th>Open</th><th>In Progress</th><th>Resolved</th><th>Total</th></tr></thead><tbody>
+      ${etSubs.map(s=>{const d=etPipeline[s]||{open:0,prog:0,resolved:0};const tot=d.open+d.prog+d.resolved;return tot?`<tr><td style="font-size:11px">${s}</td><td>${d.open?`<span class="tag tag-open">${d.open}</span>`:'\u2014'}</td><td>${d.prog?`<span class="tag tag-progress">${d.prog}</span>`:'\u2014'}</td><td>${d.resolved?`<span class="tag tag-resolved">${d.resolved}</span>`:'\u2014'}</td><td><strong>${tot}</strong></td></tr>`:''}).join('')}
+      </tbody></table>
+    </div>
+
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px">
+      <strong style="font-size:13px;display:block;margin-bottom:10px">\uD83C\uDFC6 Dealer Scorecard \u2014 Top 10 nach Volumen</strong>
+      <table class="settings-table"><thead><tr><th>Dealer</th><th>Tickets</th><th>Open</th><th>Critical</th><th>Immob.</th><th>Resolved</th><th>Rate</th></tr></thead><tbody>
+      ${topDealers.map(([name,cnt])=>{const dt=all.filter(t=>t.dealerName===name);const dO=dt.filter(t=>t.status==='Open'||t.status==='In Progress').length;const dC=dt.filter(t=>t.priority==='Critical'&&t.status!=='Resolved'&&t.status!=='Closed').length;const dI=dt.filter(t=>!t.mobilized&&t.status!=='Resolved'&&t.status!=='Closed').length;const dR=dt.filter(t=>t.status==='Resolved'||t.status==='Closed').length;const rate=cnt?(dR/cnt*100).toFixed(0):'0';return`<tr><td style="font-size:10px">${name}</td><td><strong>${cnt}</strong></td><td>${dO?`<span class="tag tag-open">${dO}</span>`:'\u2014'}</td><td>${dC?`<span class="tag tag-critical">${dC}</span>`:'\u2014'}</td><td>${dI?`<span class="tag tag-immob">${dI}</span>`:'\u2014'}</td><td>${dR}</td><td><strong style="color:${parseInt(rate)>=70?'var(--success)':parseInt(rate)>=40?'var(--warning)':'var(--danger)'}">${rate}%</strong></td></tr>`}).join('')}
+      </tbody></table>
+    </div>
+
+    ${multiVin.length?`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px">
+      <strong style="font-size:13px;display:block;margin-bottom:10px;color:var(--danger)">\uD83D\uDE9B Problemfahrzeuge / Problem Vehicles (mehrere Tickets pro VIN)</strong>
+      <table class="settings-table"><thead><tr><th>VIN</th><th>Dealer</th><th>Tickets</th><th>Ticket Nos.</th></tr></thead><tbody>
+      ${multiVin.map(([vin,d])=>`<tr><td style="font-size:10px;font-family:var(--mono)">${vin}</td><td style="font-size:10px">${d.dealer}</td><td><strong style="color:var(--danger)">${d.count}</strong></td><td style="font-size:10px">${d.tickets.map(tn=>linkTNo(tn)).join(', ')}</td></tr>`).join('')}
+      </tbody></table>
+    </div>`:``}
+
+    ${immobList.length?`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px">
+      <strong style="font-size:13px;display:block;margin-bottom:10px;color:var(--danger)">\uD83D\uDE9B Immobilisierte Fahrzeuge nach Dealer / Immobilized Vehicles</strong>
+      ${immobList.map(([name,cnt])=>{const mx=immobList[0][1];return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;width:200px;flex-shrink:0;color:var(--text-sec)">${name}</span>${bar(cnt,mx,'danger')}<strong style="font-size:12px;width:30px;text-align:right;color:var(--danger)">${cnt}</strong></div>`}).join('')}
+    </div>`:``}
+
+    ${zeroDealers.length&&!analyticsDealer?`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+      <strong style="font-size:13px;display:block;margin-bottom:10px">\uD83D\uDCCB Inactive Dealers (${zeroDealers.length} of ${DEALERS.length} ohne Tickets / with zero tickets)</strong>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${zeroDealers.slice(0,30).map(d=>`<span class="tag" style="font-size:10px;padding:3px 8px;background:var(--bg);border:1px solid var(--border)">${d.name} <span style="color:var(--text-mut)">\u2014 ${d.city}</span></span>`).join('')}
+        ${zeroDealers.length>30?`<span style="font-size:11px;color:var(--text-mut);padding:4px">... and ${zeroDealers.length-30} more</span>`:''}
+      </div>
+    </div>`:``}
+    </div><!-- /RIGHT CONTENT -->
+  </div><!-- /FLEX LAYOUT -->
+  `;
+}
+
+
+// INIT
+loadState();
+renderApp();
+</script>
+</body>
+</html>
