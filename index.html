@@ -141,7 +141,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .mnav-btn svg{width:20px;height:20px}
 .mnav-btn.active{color:var(--ford-blue)}
 .hint{font-size:10px;color:var(--text-mut);margin-top:2px}
-@media(max-width:768px){.tab-nav{display:none}.mobile-nav{display:block}.detail-panel{width:100%;max-width:100%}.form-row{grid-template-columns:1fr}.ticket-grid{grid-template-columns:1fr}}
+@media(max-width:768px){.tab-nav{display:none}.mobile-nav{display:block}.detail-panel{width:100%;max-width:100%}.form-row{grid-template-columns:1fr}.ticket-grid{grid-template-columns:1fr}.topbar-username{display:none}.login-logo img{height:100px !important}}
 </style>
 </head>
 <body>
@@ -181,14 +181,14 @@ let currentUser=null,tickets=[],nextTid=1,notifications=[],holidays=[],userRight
 function L(de,en){return langMode==='de'?de:de+' / '+en}
 
 function loadState(){
-  try{const s=localStorage.getItem('ftdV17');if(s){const d=JSON.parse(s);tickets=d.t||[];nextTid=d.n||1;notifications=d.nf||[];holidays=d.h||[];userRights=d.ur||[];langMode=d.lang||'de_en';
+  try{const s=localStorage.getItem('ftdV18');if(s){const d=JSON.parse(s);tickets=d.t||[];nextTid=d.n||1;notifications=d.nf||[];holidays=d.h||[];userRights=d.ur||[];langMode=d.lang||'de_en';
     subcategories=JSON.parse(JSON.stringify(DEFAULT_SUBCATEGORIES));
   }}catch(e){}
   FTD_TEAM.forEach(m=>{if(!userRights.find(u=>u.userId===m.id&&u.type==='ftd'))userRights.push({userId:m.id,type:'ftd',name:m.name,role:m.role,email:m.email,canAdmin:m.isAdmin})});
   if(!tickets.length)seedDemo();
   saveState();
 }
-function saveState(){try{localStorage.setItem('ftdV17',JSON.stringify({t:tickets,n:nextTid,nf:notifications,h:holidays,sc:subcategories,ur:userRights,lang:langMode}))}catch(e){}}
+function saveState(){try{localStorage.setItem('ftdV18',JSON.stringify({t:tickets,n:nextTid,nf:notifications,h:holidays,sc:subcategories,ur:userRights,lang:langMode}))}catch(e){}}
 
 function seedDemo(){
   const D=[
@@ -308,14 +308,14 @@ function renderApp(){
   if(!currentUser){document.getElementById('app').innerHTML=`
     <div class="login-wrap"><div class="login-card">
     <div class="login-logo"><img src="${LOGO}" alt="F-Trucks"><h2>AfterSales Ticket System</h2><p>F-Trucks Deutschland GmbH</p></div>
-    <div class="form-group"><label>Login als</label>
-    <div style="display:flex;gap:10px;margin-bottom:10px">
-      <label style="font-size:13px;display:flex;align-items:center;gap:4px"><input type="radio" name="loginType" value="ftd" checked onchange="document.getElementById('ftdLogin').style.display='block';document.getElementById('dealerLogin').style.display='none'"> F-Trucks Deutschland</label>
-      <label style="font-size:13px;display:flex;align-items:center;gap:4px"><input type="radio" name="loginType" value="dealer" onchange="document.getElementById('ftdLogin').style.display='none';document.getElementById('dealerLogin').style.display='block'"> Sub-Dealer</label>
+    <div class="form-group"><label>${L('Anmelden als','Login as')}</label>
+    <div style="display:flex;gap:16px;margin:10px 0;padding:10px;background:var(--bg);border-radius:var(--radius-sm)">
+      <label style="font-size:14px;display:flex;align-items:center;gap:6px;cursor:pointer;flex:1"><input type="radio" name="loginType" value="ftd" checked onchange="document.getElementById('ftdLogin').style.display='block';document.getElementById('dealerLogin').style.display='none'" style="width:18px;height:18px"> <span style="font-weight:600">F-Trucks<br><span style="font-weight:400;font-size:11px;color:var(--text-sec)">Deutschland</span></span></label>
+      <label style="font-size:14px;display:flex;align-items:center;gap:6px;cursor:pointer;flex:1"><input type="radio" name="loginType" value="dealer" onchange="document.getElementById('ftdLogin').style.display='none';document.getElementById('dealerLogin').style.display='block'" style="width:18px;height:18px"> <span style="font-weight:600">Sub-Dealer<br><span style="font-weight:400;font-size:11px;color:var(--text-sec)">${L('Partnerwerkstatt','Partner Workshop')}</span></span></label>
     </div>
-    <div id="ftdLogin"><select id="loginUser" class="form-group" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font)">${FTD_TEAM.map(m=>`<option value="${m.id}">${m.name} \u2014 ${m.role}</option>`).join('')}</select></div>
-    <div id="dealerLogin" style="display:none"><select id="loginDealer" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font)">${DEALERS.map((d,i)=>`<option value="${i}">${d.name} \u2014 ${d.city}</option>`).join('')}</select></div></div>
-    <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="doLogin()">${L('Anmelden','Login')}</button>
+    <div id="ftdLogin"><select id="loginUser" style="width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font)">${FTD_TEAM.map(m=>`<option value="${m.id}">${m.name} \u2014 ${m.role}</option>`).join('')}</select></div>
+    <div id="dealerLogin" style="display:none"><select id="loginDealer" style="width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font)">${DEALERS.map((d,i)=>`<option value="${i}">${d.name} \u2014 ${d.city}</option>`).join('')}</select></div></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:12px;padding:12px;font-size:14px" onclick="doLogin()">${L('Anmelden','Login')}</button>
     <div id="loginInstall" style="display:none;margin-top:12px;padding:10px;background:var(--bg);border-radius:var(--radius-sm);text-align:center;border:1px dashed var(--border)">
       <p style="font-size:11px;color:var(--text-sec);margin-bottom:6px">\uD83D\uDCF2 ${L('Als App installieren f\u00FCr schnellen Zugriff','Install as app for quick access')}</p>
       <button onclick="installPWA()" style="background:var(--ford-blue);color:#fff;border:none;padding:6px 16px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">${L('App installieren','Install App')}</button>
@@ -326,7 +326,7 @@ function renderApp(){
   const myN=notifications.filter(n=>n.forUser===currentUser?.id).sort((a,b)=>new Date(b.time)-new Date(a.time));
   document.getElementById('app').innerHTML=`
     <div class="topbar"><div class="topbar-brand"><span>F-Trucks Deutschland</span></div>
-    <div class="topbar-right"><button id="installBtn" onclick="installPWA()" style="display:none;background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:5px 12px;border-radius:var(--radius-sm);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);align-items:center;gap:4px">\uD83D\uDCF2 Install App</button><button onclick="openNewTicket()" style="background:var(--ford-orange);color:#fff;border:none;padding:6px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">+ ${L('Neues Ticket','New Ticket')}</button><div class="icon-btn" onclick="toggleTheme()">\uD83C\uDF13</div><div class="icon-btn" onclick="toggleNotif()">\uD83D\uDD14<span class="notif-badge" style="display:${ur?'flex':'none'}">${ur}</span></div><div style="font-size:12px;font-weight:500;opacity:0.9">${currentUser.name}</div><div class="topbar-avatar" onclick="doLogout()" title="Logout">${currentUser.name.substring(0,2).toUpperCase()}</div></div></div>
+    <div class="topbar-right"><button id="installBtn" onclick="installPWA()" style="display:none;background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:5px 12px;border-radius:var(--radius-sm);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);align-items:center;gap:4px">\uD83D\uDCF2 Install App</button><button onclick="openNewTicket()" style="background:var(--ford-orange);color:#fff;border:none;padding:6px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">+ ${L('Neues Ticket','New Ticket')}</button><div class="icon-btn" onclick="toggleTheme()">\uD83C\uDF13</div><div class="icon-btn" onclick="toggleNotif()">\uD83D\uDD14<span class="notif-badge" style="display:${ur?'flex':'none'}">${ur}</span></div><div class="topbar-username" style="font-size:12px;font-weight:500;opacity:0.9">${currentUser.name}</div><div class="topbar-avatar" onclick="doLogout()" title="Logout">${currentUser.name.substring(0,2).toUpperCase()}</div></div></div>
     <div class="notif-panel" id="notifPanel"><div class="notif-panel-hdr"><span>${L('Benachrichtigungen','Notifications')}</span><span style="font-size:11px;color:var(--ford-orange);cursor:pointer" onclick="markRead()">${L('Alle gelesen','Mark all read')}</span></div>${myN.length?myN.slice(0,15).map(n=>`<div class="notif-item ${n.read?'':'unread'}" onclick="openNT(${n.ticketId},${n.id})"><p>${n.msg}</p><div class="notif-time">${fmtDT(n.time)}</div></div>`).join(''):'<div style="padding:20px;text-align:center;color:var(--text-mut);font-size:12px">Keine</div>'}</div>
     <div class="tab-nav">
       <button class="tab-btn ${currentTab==='dashboard'?'active':''}" onclick="switchTab('dashboard')">Dashboard</button>
@@ -339,6 +339,13 @@ function renderApp(){
     <div class="main" id="mc"></div>
     <div class="detail-overlay" id="dOverlay" onclick="closeDetail()"></div><div class="detail-panel" id="dPanel"></div>
     <div class="modal-overlay" id="mOverlay"></div><div class="lightbox" id="lb" onclick="closeLB()"></div>
+    <div class="mobile-nav"><div class="mobile-nav-inner">
+      <button class="mnav-btn ${currentTab==='dashboard'?'active':''}" onclick="switchTab('dashboard')"><span style="font-size:18px">\uD83C\uDFE0</span>Dashboard</button>
+      <button class="mnav-btn ${currentTab==='all'||currentTab==='open'||currentTab==='in-progress'||currentTab==='resolved'?'active':''}" onclick="switchTab('all')"><span style="font-size:18px">\uD83C\uDFAB</span>${L('Tickets','Tickets')}</button>
+      ${isFtd()?`<button class="mnav-btn ${currentTab==='analytics'?'active':''}" onclick="switchTab('analytics')"><span style="font-size:18px">\uD83D\uDCCA</span>${L('Analyse','Analytics')}</button>`:''}
+      ${isFtd()?`<button class="mnav-btn ${currentTab==='settings'?'active':''}" onclick="switchTab('settings')"><span style="font-size:18px">\u2699\uFE0F</span>${L('Einst.','Settings')}</button>`:''}
+      <button class="mnav-btn" onclick="doLogout()"><span style="font-size:18px">\uD83D\uDEAA</span>Logout</button>
+    </div></div>
 `;
   renderContent();
 }
