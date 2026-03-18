@@ -14,7 +14,7 @@
 <script>
 function generateIcon(size){const c=document.createElement('canvas');c.width=size;c.height=size;const x=c.getContext('2d');x.fillStyle='#003478';x.fillRect(0,0,size,size);x.fillStyle='#F26522';x.fillRect(0,size*0.78,size,size*0.22);x.fillStyle='#FFFFFF';x.font='bold '+Math.round(size*0.22)+'px Arial';x.textAlign='center';x.fillText('FTD',size/2,size*0.38);x.font=Math.round(size*0.11)+'px Arial';x.fillText('AfterSales',size/2,size*0.55);x.fillText('Tickets',size/2,size*0.70);return c.toDataURL('image/png')}
 window.addEventListener('DOMContentLoaded',()=>{
-  const manifest={name:'F-Trucks Deutschland AfterSales Ticket System',short_name:'FTD Tickets',start_url:location.href,display:'standalone',orientation:'any',background_color:'#003478',theme_color:'#003478',icons:[]};
+  const manifest={name:'F-Trucks Deutschland AfterSales Ticket System',short_name:'FTD Tickets',start_url:location.href,display:'standalone',orientation:'portrait',background_color:'#003478',theme_color:'#003478',icons:[]};
   [72,96,128,144,152,192,384,512].forEach(s=>{manifest.icons.push({src:generateIcon(s),sizes:s+'x'+s,type:'image/png',purpose:'any maskable'})});
   const mLink=document.createElement('link');mLink.rel='manifest';mLink.href=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/json'}));document.head.appendChild(mLink);
   const ai=document.createElement('link');ai.rel='apple-touch-icon';ai.href=generateIcon(180);document.head.appendChild(ai);
@@ -141,7 +141,30 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .mnav-btn svg{width:20px;height:20px}
 .mnav-btn.active{color:var(--ford-blue)}
 .hint{font-size:10px;color:var(--text-mut);margin-top:2px}
-@media(max-width:768px){.tab-nav{display:none}.mobile-nav{display:block}.detail-panel{width:100%;max-width:100%}.form-row{grid-template-columns:1fr}.ticket-grid{grid-template-columns:1fr}.topbar-username{display:none}.login-logo img{height:100px !important}}
+@media(max-width:768px){
+  .tab-nav{display:none}
+  .mobile-nav{display:block}
+  .detail-panel{width:100%;max-width:100%}
+  .form-row{grid-template-columns:1fr}
+  .ticket-grid{grid-template-columns:1fr}
+  .topbar-username{display:none}
+  .login-logo img{height:100px !important}
+  .analytics-sidebar{display:none !important}
+  .analytics-content{min-width:0 !important}
+  .analytics-flex{flex-direction:column !important}
+  .analytics-grid-2{grid-template-columns:1fr !important}
+  .mobile-dealer-filter{display:block !important}
+  .stats-row{grid-template-columns:repeat(2,1fr) !important}
+  .settings-table{font-size:10px}
+  .settings-table th,.settings-table td{padding:5px 6px}
+  .stat-card{padding:8px}
+  .stat-value{font-size:20px}
+  .stat-label{font-size:9px}
+}
+@media screen and (orientation:landscape) and (max-height:500px){
+  body::after{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:var(--ford-blue);z-index:9999;display:flex;align-items:center;justify-content:center}
+  body::before{content:'\uD83D\uDCF1 Bitte Hochformat verwenden / Please use portrait mode';position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:18px;font-family:var(--font);z-index:10000;text-align:center;white-space:nowrap}
+}
 </style>
 </head>
 <body>
@@ -181,14 +204,14 @@ let currentUser=null,tickets=[],nextTid=1,notifications=[],holidays=[],userRight
 function L(de,en){return langMode==='de'?de:de+' / '+en}
 
 function loadState(){
-  try{const s=localStorage.getItem('ftdV18');if(s){const d=JSON.parse(s);tickets=d.t||[];nextTid=d.n||1;notifications=d.nf||[];holidays=d.h||[];userRights=d.ur||[];langMode=d.lang||'de_en';
+  try{const s=localStorage.getItem('ftdV19');if(s){const d=JSON.parse(s);tickets=d.t||[];nextTid=d.n||1;notifications=d.nf||[];holidays=d.h||[];userRights=d.ur||[];langMode=d.lang||'de_en';
     subcategories=JSON.parse(JSON.stringify(DEFAULT_SUBCATEGORIES));
   }}catch(e){}
   FTD_TEAM.forEach(m=>{if(!userRights.find(u=>u.userId===m.id&&u.type==='ftd'))userRights.push({userId:m.id,type:'ftd',name:m.name,role:m.role,email:m.email,canAdmin:m.isAdmin})});
   if(!tickets.length)seedDemo();
   saveState();
 }
-function saveState(){try{localStorage.setItem('ftdV18',JSON.stringify({t:tickets,n:nextTid,nf:notifications,h:holidays,sc:subcategories,ur:userRights,lang:langMode}))}catch(e){}}
+function saveState(){try{localStorage.setItem('ftdV19',JSON.stringify({t:tickets,n:nextTid,nf:notifications,h:holidays,sc:subcategories,ur:userRights,lang:langMode}))}catch(e){}}
 
 function seedDemo(){
   const D=[
@@ -944,9 +967,9 @@ function renderAnalytics(mc){
   function card(title,content){return`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px"><strong style="font-size:13px;display:block;margin-bottom:10px">${title}</strong>${content}</div>`}
 
   mc.innerHTML=`
-  <div style="display:flex;gap:14px;align-items:flex-start">
+  <div class="analytics-flex" style="display:flex;gap:14px;align-items:flex-start">
     <!-- LEFT SIDEBAR -->
-    <div style="width:220px;flex-shrink:0;position:sticky;top:66px">
+    <div class="analytics-sidebar" style="width:220px;flex-shrink:0;position:sticky;top:66px">
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
         <div style="padding:10px 12px;background:var(--ford-blue);color:#fff;font-size:12px;font-weight:700">\uD83C\uDFE2 ${L('Dealer Filter','Dealer Filter')}</div>
         <div style="max-height:calc(100vh - 160px);overflow-y:auto">
@@ -956,9 +979,15 @@ function renderAnalytics(mc){
       </div>
     </div>
     <!-- RIGHT CONTENT -->
-    <div style="flex:1;min-width:0">
+    <div class="analytics-content" style="flex:1;min-width:0">
     ${analyticsDealer?`<div style="margin-bottom:12px;padding:10px 14px;background:var(--ford-blue);color:#fff;border-radius:var(--radius);display:flex;justify-content:space-between;align-items:center"><div><strong style="font-size:14px">\uD83C\uDFE2 ${analyticsDealer}</strong><br><span style="font-size:11px;opacity:0.8">${all.length} ${L('Tickets','tickets')} | ${L('Gefilterte Ansicht','Filtered view')}</span></div><button onclick="setAnalyticsDealer('')" style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:11px;font-family:var(--font)">\u2715 ${L('Filter entfernen','Clear filter')}</button></div>`:''}
-    <div class="stats-row" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr))">
+    <div class="mobile-dealer-filter" style="display:none;margin-bottom:12px">
+      <select onchange="setAnalyticsDealer(this.value)" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font)">
+        <option value="" ${!analyticsDealer?'selected':''}>\uD83C\uDFE2 ${L('Alle Dealer','All Dealers')} (${allTickets.length})</option>
+        ${activeDealerNames.map(dn=>`<option value="${dn.replace(/'/g,"&#39;")}" ${analyticsDealer===dn?'selected':''}>${dn} (${dealerTicketCounts[dn]||0})</option>`).join('')}
+      </select>
+    </div>
+    <div class="stats-row" style="grid-template-columns:repeat(auto-fit,minmax(100px,1fr))">
       <div class="stat-card"><div class="stat-label">Gesamt / Total</div><div class="stat-value">${all.length}</div></div>
       <div class="stat-card"><div class="stat-label">Offen / Open</div><div class="stat-value" style="color:var(--info)">${open.length}</div></div>
       <div class="stat-card"><div class="stat-label">In Bearbeitung</div><div class="stat-value" style="color:var(--warning)">${prog.length}</div></div>
@@ -969,22 +998,22 @@ function renderAnalytics(mc){
       <div class="stat-card"><div class="stat-label">Lösungsrate / Resolution Rate</div><div class="stat-value" style="color:var(--success)">${resRate}%</div></div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+    <div class="analytics-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
       ${card('Tickets nach Kategorie / Tickets by Category', CATEGORIES.map(c=>{const cnt=catCounts[c]||0;const mx=Math.max(...Object.values(catCounts));return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;width:120px;flex-shrink:0;color:var(--text-sec)">${c.split(' ')[0]}</span>${bar(cnt,mx,'ford-orange')}<strong style="font-size:12px;width:30px;text-align:right">${cnt}</strong></div>`}).join(''))}
       ${card('Aktive nach Priorität / Active by Priority', PRIORITIES.map(p=>{const cnt=priCounts[p]||0;const mx=Math.max(...Object.values(priCounts),1);const col=p==='Critical'?'danger':p==='High'?'warning':p==='Medium'?'info':'success';return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;width:60px;flex-shrink:0;color:var(--text-sec)">${p}</span>${bar(cnt,mx,col)}<strong style="font-size:12px;width:30px;text-align:right">${cnt}</strong></div>`}).join(''))}
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+    <div class="analytics-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
       ${card('\u23F1 Ticket-Alter (Offene Tickets) / Ticket Aging', Object.entries(ageBuckets).map(([label,cnt])=>{const mx=Math.max(...Object.values(ageBuckets),1);const col=ageColors[label];return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;width:50px;flex-shrink:0;color:var(--text-sec)">${label}</span>${bar(cnt,mx,col)}<strong style="font-size:12px;width:30px;text-align:right;color:var(--${col})">${cnt}</strong></div>`}).join('')+(ageBuckets['10d+']?'<div style="margin-top:8px;font-size:11px;color:var(--danger);font-weight:600">\u26A0 '+ageBuckets['10d+']+' Tickets offen seit über 10 Tagen</div>':''))}
       ${card('\u2705 Abschlussgründe / Closing Reasons', closeReasonList.length?closeReasonList.map(([r,cnt])=>{const mx=closeReasonList[0][1];return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:10px;width:140px;flex-shrink:0;color:var(--text-sec)">${r.split(' / ')[0]}</span>${bar(cnt,mx,'success')}<strong style="font-size:12px;width:30px;text-align:right">${cnt}</strong></div>`}).join(''):'<div style="color:var(--text-mut);font-size:12px">Keine geschlossenen Tickets mit Gründen</div>')}
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+    <div class="analytics-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
       ${card('\uD83D\uDC64 Mitarbeiter-Auslastung / Staff Workload', assignList.length?assignList.map(([name,cnt])=>{const mx=Math.max(...assignList.map(x=>x[1]),1);return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;width:80px;flex-shrink:0;color:var(--text-sec)">${name}</span>${bar(cnt,mx,'info')}<strong style="font-size:12px;width:30px;text-align:right">${cnt}</strong></div>`}).join(''):'<div style="color:var(--text-mut);font-size:12px">Keine aktiven Tickets</div>')}
       ${card('\u23F1 Ø Reaktionszeit / Avg Response Time (h)', staffResponseList.length?staffResponseList.map(([name,hrs])=>{const mx=Math.max(...staffResponseList.map(x=>parseFloat(x[1])),1);const col=parseFloat(hrs)<=4?'success':parseFloat(hrs)<=12?'warning':'danger';return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;width:80px;flex-shrink:0;color:var(--text-sec)">${name}</span>${bar(parseFloat(hrs),mx,col)}<strong style="font-size:12px;width:40px;text-align:right;color:var(--${col})">${hrs}h</strong></div>`}).join(''):'<div style="color:var(--text-mut);font-size:12px">Keine Reaktionszeitdaten vorhanden</div>')}
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+    <div class="analytics-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
       ${card('\uD83D\uDD27 Häufigste Probleme / Top Issue Types', topSubs.length?topSubs.map(([name,cnt])=>{const mx=topSubs[0][1];return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;width:120px;flex-shrink:0;color:var(--text-sec)">${name}</span>${bar(cnt,mx,'warning')}<strong style="font-size:12px;width:30px;text-align:right">${cnt}</strong></div>`}).join(''):'<div style="color:var(--text-mut);font-size:12px">Keine Daten</div>')}
       ${card('\uD83D\uDD01 Wiederkehrende Probleme / Repeat Issues', repeaters.length?`<table class="settings-table"><thead><tr><th style="font-size:10px">Dealer</th><th style="font-size:10px">Issue Type</th><th style="font-size:10px">#</th></tr></thead><tbody>${repeaters.map(r=>`<tr><td style="font-size:10px">${r.dealer.substring(0,28)}</td><td style="font-size:10px"><span class="tag tag-cat" style="font-size:9px;padding:2px 6px">${r.subcat}</span></td><td><strong style="color:var(--danger)">${r.count}x</strong></td></tr>`).join('')}</tbody></table>`:'<div style="color:var(--text-mut);font-size:12px">Keine Muster erkannt</div>')}
     </div>
